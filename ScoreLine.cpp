@@ -1,0 +1,664 @@
+﻿#include "pch.hpp"
+#include "ScoreLine.hpp"
+#include "TH135AddrDef.h"
+
+#include <sqlite3.h>
+#include <utility>
+
+#include "MinimalMemory.hpp"
+
+#define MINIMAL_USE_PROCESSHEAPSTRING
+#include "MinimalPath.hpp"
+
+#define TRACKRECORD_TABLE "trackrecord135"
+#define COMBORECORD_TABLE "camborecord135"
+
+static sqlite3 *s_db;
+static bool s_viewEntered;
+
+static DWORD s_scoreLine[TH135CHAR_LIMIT][TH135CHAR_LIMIT][2];
+static DWORD s_scoreLineNew[TH135CHAR_LIMIT][TH135CHAR_LIMIT][2];
+static Minimal::ProcessHeapString  s_srPath;
+static Minimal::ProcessHeapStringA s_srPathU;
+
+void ScoreLine_SetPath(LPCTSTR path)
+{
+	s_srPath = path;
+	Minimal::ToUTF8(s_srPathU, path);
+}
+
+LPCTSTR ScoreLine_GetPath()
+{
+	return s_srPath;
+}
+
+static void ScoreLine_UserFunc_AnsiToUTF8(sqlite3_context *context, int argc, sqlite3_value **argv) {
+	if (argc >= 1) {
+		const char *source = reinterpret_cast<const char *>(sqlite3_value_text(argv[0]));
+		Minimal::ProcessHeapStringA utf8ized;
+		Minimal::ToUTF8(utf8ized, source);
+		sqlite3_result_text(context, utf8ized.GetRaw(), utf8ized.GetSize(), SQLITE_TRANSIENT);
+	}
+}
+
+static int ScoreLine_QueryCallback(void *, int argc, char **argv, char **colName)
+{
+	if (argc != 4) return 1;
+
+	int p1id = ::StrToIntA(argv[0]);
+	int p2id = ::StrToIntA(argv[1]);
+	int p1win = ::StrToIntA(argv[2]);
+	int p2win = ::StrToIntA(argv[3]);
+
+	if (p1id < 0 || p1id >= TH135AddrGetCharCount()) return 1;
+	if (p2id < 0 || p2id >= TH135AddrGetCharCount()) return 1;
+	if (p1win < 0) p1win = 0;
+	if (p2win < 0) p2win = 0;
+
+	s_scoreLineNew[p1id][p2id][0] = p1win;
+	s_scoreLineNew[p1id][p2id][1] = p2win;
+	return 0;
+}
+
+static int ScoreLine_QueryCallback2(void *user, int argc, char **argv, char **colName)
+{
+	if (argc != 3) return 1;
+
+	SCORELINE_ITEM item;
+	::lstrcpyA(item.p2name, argv[0]);
+	item.p1win = ::StrToIntA(argv[1]);
+	item.p2win = ::StrToIntA(argv[2]);
+
+	std::pair<void(*)(SCORELINE_ITEM *, void *), void*> *cbinfo;
+	*(void**)&cbinfo = user;
+
+	cbinfo->first(&item, cbinfo->second);
+
+	return 0;
+}
+
+static int ScoreLine_QueryCallback3(void *user, int argc, char **argv, char **colName)
+{
+	if (argc != 7) return 1;
+
+	SCORELINE_ITEM item;
+	::StrToInt64ExA(argv[0], STIF_DEFAULT, &item.timestamp);
+	::lstrcpyA(item.p1name, argv[1]);
+	item.p1id  = ::StrToIntA(argv[2]);
+	item.p1win = ::StrToIntA(argv[3]);
+
+	::lstrcpyA(item.p2name, argv[4]);
+	item.p2id  = ::StrToIntA(argv[5]);
+	item.p2win = ::StrToIntA(argv[6]);
+
+	std::pair<void(*)(SCORELINE_ITEM *, void *), void*> *cbinfo;
+	*(void**)&cbinfo = user;
+
+	cbinfo->first(&item, cbinfo->second);
+
+	return 0;
+}
+
+static int ScoreLine_QueryCallback4(void *user, int argc, char **argv, char **colName)
+{
+	if (argc != 7) return 1;
+
+	struct {
+		bool processed;
+		SCORELINE_ITEM *pret;
+	} *pretpack;
+	*(void **)&pretpack = user;
+	
+	SCORELINE_ITEM *pitem = pretpack->pret;
+	::StrToInt64ExA(argv[0], STIF_DEFAULT, &pitem->timestamp);
+	::lstrcpyA(pitem->p1name, argv[1]);
+	pitem->p1id  = ::StrToIntA(argv[2]);
+	pitem->p1win = ::StrToIntA(argv[3]);
+
+	::lstrcpyA(pitem->p2name, argv[4]);
+	pitem->p2id  = ::StrToIntA(argv[5]);
+	pitem->p2win = ::StrToIntA(argv[6]);
+
+	pretpack->processed = true;
+	return 0;
+}
+
+static void ScoreLine_ConstructFilter(Minimal::ProcessHeapStringA &ret, SCORELINE_FILTER_DESC &filterDesc)
+{
+	if ((filterDesc.mask & SCORELINE_FILTER__SQLMASK) == 0) return;
+	char buff[128];
+	ret += " WHERE ";
+
+	int count = 0;
+	for (int i = 1; i <= SCORELINE_FILTER__MAX; i <<= 1) {
+		if (count > 0 && (filterDesc.mask & i)) ret += " AND ";
+		switch(filterDesc.mask & i) {
+		case SCORELINE_FILTER__P1NAME:
+			sqlite3_snprintf(_countof(buff), buff, "p1name = '%q'", filterDesc.p1name);
+			ret += buff;
+			++count;
+			break;
+		case SCORELINE_FILTER__P2NAME:
+			sqlite3_snprintf(_countof(buff), buff, "p2name = '%q'", filterDesc.p2name);
+			ret += buff;
+			++count;
+			break;
+		case SCORELINE_FILTER__P1NAMELIKE:
+			sqlite3_snprintf(_countof(buff), buff, "ansi2utf8(p1name) LIKE '%q'", static_cast<LPCSTR>(MinimalA2UTF8(filterDesc.p1name)));
+			ret += buff;
+			++count;
+			break;
+		case SCORELINE_FILTER__P2NAMELIKE:
+			sqlite3_snprintf(_countof(buff), buff, "ansi2utf8(p2name) LIKE '%q'", static_cast<LPCSTR>(MinimalA2UTF8(filterDesc.p2name)));
+			ret += buff;
+			++count;
+			break;
+		case SCORELINE_FILTER__P1ID:
+			sqlite3_snprintf(_countof(buff), buff, "p1id = %ld", filterDesc.p1id);
+			ret += buff;
+			++count;
+			break;
+		case SCORELINE_FILTER__P1WIN:
+			sqlite3_snprintf(_countof(buff), buff, "p1win = %ld", filterDesc.p1win);
+			ret += buff;
+			++count;
+			break;
+		case SCORELINE_FILTER__P2ID:
+			sqlite3_snprintf(_countof(buff), buff, "p2id = %ld", filterDesc.p2id);
+			ret += buff;
+			++count;
+			break;
+		case SCORELINE_FILTER__P2WIN:
+			sqlite3_snprintf(_countof(buff), buff, "p2win = %ld", filterDesc.p2win);
+			ret += buff;
+			++count;
+			break;
+		case SCORELINE_FILTER__TIMESTAMP_BEGIN:
+			sqlite3_snprintf(_countof(buff), buff, "timestamp >= %lld", filterDesc.t_begin);
+			ret += buff;
+			++count;
+			break;
+		case SCORELINE_FILTER__TIMESTAMP_END:
+			sqlite3_snprintf(_countof(buff), buff, "timestamp <= %lld", filterDesc.t_end);
+			ret += buff;
+			++count;
+			break;
+		}
+	}
+}
+
+static void ComboInfo_ConstructFilter(Minimal::ProcessHeapStringA &ret, COMBOINFO_FILTER_DESC& filterdesc)
+{
+	char buff[128];
+	ret+=" WHERE ";
+
+	int count=0;
+	for(int i=1;i<COMBOINFO_FILTER__MAX;i<<=1)
+	{
+		if(count >0 && (filterdesc.mask & i))ret+=" AND ";
+		switch(filterdesc.mask & i)
+		{
+		case COMBOINFO_FILTER__TIMESTAMPSTART:
+			sqlite3_snprintf(_countof(buff),buff,"timestamp>= %lld",filterdesc.timestamps);
+			ret+=buff;
+			++count;
+			break;
+		case COMBOINFO_FILTER__TIMESTAMPEND:
+			sqlite3_snprintf(_countof(buff),buff,"timestamp<= %lld",filterdesc.timestampe);
+			ret+=buff;
+			++count;
+			break;
+		case COMBOINFO_FILTER__BATTLE:
+			sqlite3_snprintf(_countof(buff),buff,"Battle= %lld",filterdesc.battle);
+			ret+=buff;
+			++count;
+			break;
+		case COMBOINFO_FILTER__PNAME:
+			sqlite3_snprintf(_countof(buff),buff,"pname= %q",filterdesc.pname);
+			ret+=buff;
+			++count;
+			break;
+		case COMBOINFO_FILTER__PID:
+			sqlite3_snprintf(_countof(buff),buff,"pid= %ld",filterdesc.pid);
+			ret+=buff;
+			++count;
+			break;
+		case COMBOINFO_FILTER__FIN:
+			sqlite3_snprintf(_countof(buff),buff,"fin= %ld",filterdesc.fin);
+			ret+=buff;
+			++count;
+			break;
+		}
+	}
+}
+
+bool ScoreLine_QueryTrackRecord(SCORELINE_FILTER_DESC &filterDesc)
+{
+
+	Minimal::ProcessHeapStringA filterStr;
+	char *errmsg;
+	int rc;
+
+	ScoreLine_ConstructFilter(filterStr, filterDesc);
+
+	ZeroMemory(s_scoreLineNew, sizeof s_scoreLineNew);
+	char *query = sqlite3_mprintf(
+		(filterDesc.mask & SCORELINE_FILTER__LIMIT ?
+			"SELECT T.p1id, T.p2id, sum(T.p1win/2), sum(T.p2win/2) "
+			"FROM ("
+				"SELECT p1id, p2id, p1win, p2win "
+				"FROM " TRACKRECORD_TABLE " %s ORDER BY timestamp DESC LIMIT %d"
+			") AS T "
+			"GROUP BY T.p1id, T.p2id;"
+			:
+			"SELECT T.p1id, T.p2id, sum(T.p1win/2), sum(T.p2win/2) "
+			"FROM " TRACKRECORD_TABLE " AS T %s GROUP BY T.p1id, T.p2id;"
+		),
+		filterStr.GetRaw(), filterDesc.limit);
+	rc = sqlite3_exec(s_db, 
+		query, ScoreLine_QueryCallback, NULL, &errmsg);
+	sqlite3_free(query);
+	if (rc) return false;
+
+	memcpy(s_scoreLine, s_scoreLineNew, sizeof(s_scoreLine));
+	return true;
+}
+
+DWORD ScoreLine_Read(int p1, int p2, int idx)
+{
+	return s_scoreLine[p1][p2][idx];
+}
+
+bool ScoreLine_Append(SCORELINE_ITEM *item)
+{
+	sqlite3_stmt *stmt;
+	int rc;
+
+	if (!s_db) return false;
+
+	rc = sqlite3_prepare(s_db, 
+		"insert into " TRACKRECORD_TABLE " (timestamp, p1name, p1id, p1win, p2name, p2id, p2win) "
+		 "values (?, ?, ?, ?, ?, ?, ?);", -1, &stmt, NULL);
+	if (rc) return false;
+
+	sqlite3_bind_int64(stmt, 1, item->timestamp);
+	sqlite3_bind_text (stmt, 2, item->p1name, -1, NULL);
+	sqlite3_bind_int  (stmt, 3, item->p1id);
+	sqlite3_bind_int  (stmt, 4, item->p1win);
+	sqlite3_bind_text (stmt, 5, item->p2name, -1, NULL);
+	sqlite3_bind_int  (stmt, 6, item->p2id);
+	sqlite3_bind_int  (stmt, 7, item->p2win);
+	bool ret = (sqlite3_step(stmt) == SQLITE_DONE);
+
+	sqlite3_finalize(stmt);
+
+	return ret;
+}
+
+bool ComboInfo_Append(COMBOINFO_ITEM *item)
+{
+	sqlite3_stmt *stmt;
+	int rc;
+
+	if (!s_db) return false;
+
+	rc = sqlite3_prepare(s_db, 
+		"insert into " COMBORECORD_TABLE " (timestamp,Battle , pname, pid, damage, stun, rate, hit, currenthp,fin) "
+		 "values (?, ?, ?, ?, ?, ?, ?, ?, ? ,?);", -1, &stmt, NULL);
+	if (rc)
+	{
+		const char* err=sqlite3_errmsg(s_db);
+		return false;
+	}
+
+	sqlite3_bind_int64(stmt, 1, item->timestamp);
+	sqlite3_bind_int64 (stmt, 2, item->battle);
+	sqlite3_bind_text  (stmt, 3, item->pname,-1,NULL);
+	sqlite3_bind_int  (stmt, 4, item->pid);
+	sqlite3_bind_int  (stmt, 5, item->damage);
+	sqlite3_bind_int  (stmt, 6, item->stun);
+	sqlite3_bind_int  (stmt, 7, item->rate);
+	sqlite3_bind_int  (stmt, 8, item->hit);
+	sqlite3_bind_int  (stmt, 9, item->currenthp);
+	sqlite3_bind_int  (stmt, 10, item->fin);
+	bool ret = (sqlite3_step(stmt) == SQLITE_DONE);
+
+	sqlite3_finalize(stmt);
+
+	return ret;
+}
+
+bool ScoreLine_Remove(time_t timestamp)
+{
+	if (!s_db) return false;
+	char *query = sqlite3_mprintf(
+		"DELETE FROM " TRACKRECORD_TABLE " WHERE timestamp = %lld",
+		timestamp);
+	int rc = sqlite3_exec(s_db, query, NULL, NULL, NULL);
+	sqlite3_free(query);
+	if (rc) return false;
+
+	return true;
+}
+
+bool ScoreLine_QueryProfileRank(SCORELINE_FILTER_DESC &filterDesc, void(*callback)(SCORELINE_ITEM *, void *), void *user)
+{
+	if (!s_db) return false;
+
+	Minimal::ProcessHeapStringT<char> filterStr;
+	ScoreLine_ConstructFilter(filterStr, filterDesc);
+
+	std::pair<void(*)(SCORELINE_ITEM *, void *), void*> cbinfo
+		= std::make_pair(callback, user);
+	char *query;
+	if (filterDesc.mask & SCORELINE_FILTER__LIMIT) {
+		query = sqlite3_mprintf(
+			"SELECT T.p2name, sum(T.p1win/2), sum(T.p2win/2) "
+			"FROM ("
+				"SELECT p2name, p1id, p2id, p1win, p2win "
+				"FROM " TRACKRECORD_TABLE " ORDER BY timestamp DESC LIMIT %d"
+			") AS T "
+			"%s GROUP BY T.p2name",
+			filterDesc.limit, filterStr.GetRaw());
+	} else {
+		query = sqlite3_mprintf(
+			"SELECT T.p2name, sum(T.p1win/2), sum(T.p2win/2) "
+			"FROM " TRACKRECORD_TABLE " AS T %s GROUP BY p2name",
+			filterStr.GetRaw());
+	}
+	int rc = sqlite3_exec(s_db, query, ScoreLine_QueryCallback2, (void*)&cbinfo, NULL);
+	sqlite3_free(query);
+	if (rc) return false;
+
+	return true;
+}
+
+bool ScoreLine_QueryTrackRecordLog(SCORELINE_FILTER_DESC &filterDesc, void(*callback)(SCORELINE_ITEM *, void *), void *user)
+{
+	if (!s_db) return false;
+
+	Minimal::ProcessHeapStringT<char> filterStr;
+	ScoreLine_ConstructFilter(filterStr, filterDesc);
+
+	std::pair<void(*)(SCORELINE_ITEM *, void *), void*> cbinfo
+		= std::make_pair(callback, user);
+
+	char *query = sqlite3_mprintf(
+		(filterDesc.mask & SCORELINE_FILTER__LIMIT ?
+			"SELECT * FROM " TRACKRECORD_TABLE " %s ORDER BY timestamp DESC LIMIT %d"
+			:
+			"SELECT * FROM " TRACKRECORD_TABLE " %s ORDER BY timestamp DESC"
+		),
+		filterStr.GetRaw(), filterDesc.limit);
+	int rc = sqlite3_exec(s_db, query, ScoreLine_QueryCallback3, (void*)&cbinfo, NULL);
+	sqlite3_free(query);
+	if (rc) return false;
+
+	return true;
+
+}
+
+int ComboInfo_QueryCallback(void *user,int argc,char** argv,char **colName)
+{
+	if(argc!=6)return 1;
+
+	COMBOINFO_ITEM item;
+	lstrcpyA(item.pname,argv[0]);
+	item.pid=StrToIntA(argv[1]);
+	item.damage=StrToIntA(argv[2]);
+	item.stun=StrToIntA(argv[3]);
+	item.rate=StrToIntA(argv[4]);
+	item.hit=StrToIntA(argv[5]);
+
+	std::pair<void(*)(COMBOINFO_ITEM *, void *), void*> *cbinfo;
+	*(void**)&cbinfo = user;
+
+	cbinfo->first(&item, cbinfo->second);
+
+	return 0;
+}
+
+bool ComboInfo_QueryRecord(COMBOINFO_FILTER_DESC &filterdesc,void(*callback)(COMBOINFO_ITEM*,void*),void* user)
+{
+	if (!s_db) return false;
+
+	Minimal::ProcessHeapStringT<char> filterStr;
+	ComboInfo_ConstructFilter(filterStr, filterdesc);
+
+	std::pair<void(*)(COMBOINFO_ITEM *, void *), void*> cbinfo
+		= std::make_pair(callback, user);
+	char *query;
+	query = sqlite3_mprintf(
+			"SELECT pname,pid,damage,stun,rate,hit "
+			"FROM " COMBORECORD_TABLE " %s",
+			filterStr.GetRaw());
+
+	int rc = ::sqlite3_exec(s_db, query, ComboInfo_QueryCallback, (void *)&cbinfo, NULL);
+	sqlite3_free(query);
+	if (rc) return false;
+
+	return true;
+}
+
+bool ScoreLine_QueryTrackRecordTop(SCORELINE_FILTER_DESC &filterDesc, SCORELINE_ITEM &ret)
+{
+	if (!s_db) return false;
+
+	Minimal::ProcessHeapStringA filterStr;
+	ScoreLine_ConstructFilter(filterStr, filterDesc);
+
+	char *query = sqlite3_mprintf(
+		"SELECT * "
+		"FROM " TRACKRECORD_TABLE " %s ORDER BY timestamp DESC LIMIT 1",
+		filterStr.GetRaw());
+
+	struct {
+		bool processed;
+		SCORELINE_ITEM *pret;
+	} retpack = { false, &ret };
+
+	int rc = ::sqlite3_exec(s_db, query, ScoreLine_QueryCallback4, (void *)&retpack, NULL);
+	sqlite3_free(query);
+	if (rc) return false;
+
+	return retpack.processed;
+}
+
+int IsTableExist_Callback(void *user,int argc,char** argv,char **colName)
+{
+	int* cnt=reinterpret_cast<int*>(user); 
+	(*cnt)=StrToIntA(argv[0]);
+	return 0;
+}
+
+bool IsTableExist(sqlite3* db,const char* tName)
+{
+	if(db==NULL || tName==NULL)
+	{
+		return false;
+	}
+	const char* err;
+	char *query = sqlite3_mprintf(
+		"select count(*) from sqlite_master "
+		"where type = 'table' and name = '%s'",
+		tName);
+	int cnt=0;
+	int rc = ::sqlite3_exec(db, query, IsTableExist_Callback, (void *)&cnt, NULL);
+	if(rc)
+	{
+		err=sqlite3_errmsg(db);
+	}
+	sqlite3_free(query);
+	return cnt!=0;
+}
+
+bool ScoreLine_Open(bool create)
+{
+	sqlite3 *db;
+	if (PathFileExists(s_srPath)) {
+		// オープン処理
+		int rc = sqlite3_open(s_srPathU, &db);
+		if (rc) {
+			sqlite3_close(db);
+			return false;
+		}
+		char *errmsg;
+		
+
+		if(IsTableExist(db,"camborecord135")==false)
+		{
+		Minimal::ProcessHeapStringA newpath;
+		newpath+=s_srPathU;
+		newpath+=".backup";
+		CopyFileA(s_srPathU,newpath,true);
+		rc = sqlite3_exec(db, 
+			"CREATE TABLE " COMBORECORD_TABLE "(\n"
+				"timestamp	INTEGER NOT NULL,\n"
+				"Battle       INTEGER NOT NULL,\n"
+				"pname     TEXT,\n"
+				"pid       INTEGER NOT NULL,\n"
+				"damage      INTEGER NOT NULL,\n"
+				"stun      INTEGER NOT NULL,\n"
+				"rate       INTEGER NOT NULL,\n"
+				"hit      INTEGER NOT NULL,\n"
+				"currenthp      INTEGER NOT NULL,\n"
+				"fin      INTEGER NOT NULL,\n"
+				"PRIMARY KEY (timestamp)\n"
+			")", NULL, NULL, &errmsg);
+		if (rc) {
+			sqlite3_close(db);
+			::DeleteFile(s_srPath);
+			return false;
+		}
+		rc = sqlite3_exec(db, 
+			"CREATE INDEX " COMBORECORD_TABLE "_index\n"
+			"on " COMBORECORD_TABLE " (timestamp)", NULL, NULL, &errmsg);
+		if (rc) {
+			sqlite3_close(db);
+			::DeleteFile(s_srPath);
+			return false;
+		}
+		}
+
+		rc = sqlite3_exec(db,
+			"PRAGMA temp_store = MEMORY;"
+			"PRAGMA cache_size = 1048576;"
+			, NULL, NULL, &errmsg);
+		if (rc) {
+			sqlite3_close(db);
+			return false;
+		}
+
+		rc = sqlite3_create_function(db,
+			"ansi2utf8", 1, SQLITE_UTF8,
+			static_cast<void *>(db),
+			ScoreLine_UserFunc_AnsiToUTF8, NULL, NULL);
+		if (rc) {
+			sqlite3_close(db);
+			return false;
+		}
+	} else {
+		// 作成初期化処理
+		int rc = sqlite3_open(s_srPathU, &db);
+		if (rc) {
+			sqlite3_close(db);
+			return false;
+		}
+		char *errmsg;
+		rc = sqlite3_exec(db, 
+			"CREATE TABLE " TRACKRECORD_TABLE "(\n"
+				"timestamp	INTEGER NOT NULL,\n"
+				"p1name     TEXT,\n"
+				"p1id       INTEGER NOT NULL,\n"
+				"p1win      INTEGER NOT NULL,\n"
+				"p2name     TEXT,\n"
+				"p2id       INTEGER NOT NULL,\n"
+				"p2win      INTEGER NOT NULL,\n"
+				"PRIMARY KEY (timestamp)\n"
+			")", NULL, NULL, &errmsg);
+		if (rc) {
+			sqlite3_close(db);
+			::DeleteFile(s_srPath);
+			return false;
+		}
+		rc = sqlite3_exec(db, 
+			"CREATE TABLE " COMBORECORD_TABLE "(\n"
+				"timestamp	INTEGER NOT NULL,\n"
+				"Battle       INTEGER NOT NULL,\n"
+				"pname     TEXT,\n"
+				"pid       INTEGER NOT NULL,\n"
+				"damage      INTEGER NOT NULL,\n"
+				"stun      INTEGER NOT NULL,\n"
+				"rate       INTEGER NOT NULL,\n"
+				"hit      INTEGER NOT NULL,\n"
+				"currenthp      INTEGER NOT NULL,\n"
+				"fin      INTEGER NOT NULL,\n"
+				"PRIMARY KEY (timestamp)\n"
+			")", NULL, NULL, &errmsg);
+		if (rc) {
+			sqlite3_close(db);
+			::DeleteFile(s_srPath);
+			return false;
+		}
+		rc = sqlite3_exec(db, 
+			"CREATE INDEX " TRACKRECORD_TABLE "_index\n"
+			"on " TRACKRECORD_TABLE " (timestamp)", NULL, NULL, &errmsg);
+		if (rc) {
+			sqlite3_close(db);
+			::DeleteFile(s_srPath);
+			return false;
+		}
+		rc = sqlite3_exec(db, 
+			"CREATE INDEX " COMBORECORD_TABLE "_index\n"
+			"on " COMBORECORD_TABLE " (timestamp)", NULL, NULL, &errmsg);
+		if (rc) {
+			sqlite3_close(db);
+			::DeleteFile(s_srPath);
+			return false;
+		}
+		rc = sqlite3_exec(db,
+			"PRAGMA temp_store = MEMORY;"
+			"PRAGMA cache_size = 1048576;"
+			, NULL, NULL, &errmsg);
+		if (rc) {
+			sqlite3_close(db);
+			::DeleteFile(s_srPath);
+			return false;
+		}
+
+		rc = sqlite3_create_function(db,
+			"ansi2utf8", 1, SQLITE_UTF8,
+			static_cast<void *>(db),
+			ScoreLine_UserFunc_AnsiToUTF8, NULL, NULL);
+		if (rc) {
+			sqlite3_close(db);
+			::DeleteFile(s_srPath);
+			return false;
+		}
+	}
+
+	ScoreLine_Close();
+	s_db = db;
+
+	return true;
+}
+
+void ScoreLine_Enter()
+{
+	if (!s_db) return;
+	sqlite3_exec(s_db, "BEGIN", NULL, NULL, NULL);
+}
+
+void ScoreLine_Leave(bool failed)
+{
+	if (!s_db) return;
+	sqlite3_exec(s_db, failed ? "ROLLBACK" : "COMMIT", NULL, NULL, NULL);
+}
+
+void ScoreLine_Close()
+{
+	if (s_db) {
+		sqlite3_close(s_db);
+		s_db = NULL;
+	}
+}

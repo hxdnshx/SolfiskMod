@@ -1,0 +1,240 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1BC2A047-1694-4C8A-AF3F-EF8635172D08}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Solfisk</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfAtl>false</UseOfAtl>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <GenerateManifest>true</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;USE_AUTORUN;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)Dependencies\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sqlite3.lib;shlwapi.lib;psapi.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AllowIsolation>false</AllowIsolation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MinSpace</Optimization>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;USE_AUTORUN;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)Dependencies\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ExceptionHandling>false</ExceptionHandling>
+      <StringPooling>true</StringPooling>
+      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>sqlite3.lib;shlwapi.lib;psapi.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <EntryPointSymbol>EntryPoint</EntryPointSymbol>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalManifestDependencies>
+      </AdditionalManifestDependencies>
+    </Link>
+    <Manifest>
+      <InputResourceManifests>
+      </InputResourceManifests>
+      <AdditionalManifestFiles>
+      </AdditionalManifestFiles>
+      <OutputManifestFile>
+      </OutputManifestFile>
+    </Manifest>
+    <ManifestResourceCompile>
+      <ResourceOutputFileName>
+      </ResourceOutputFileName>
+    </ManifestResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Image Include="16.ico" />
+    <Image Include="16lim.ico" />
+    <Image Include="16void.ico" />
+    <Image Include="32.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Autorun.cpp" />
+    <ClCompile Include="Clipboard.cpp" />
+    <ClCompile Include="ColoredRecordView.cpp" />
+    <ClCompile Include="ComboDlg.cpp" />
+    <ClCompile Include="HttpConn.cpp" />
+    <ClCompile Include="MainWnd.cpp" />
+    <ClCompile Include="Memento.cpp" />
+    <ClCompile Include="MinimalCRT.cpp" />
+    <ClCompile Include="MinimalMemory.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="ProfileIO.cpp" />
+    <ClCompile Include="QIBSettings.cpp" />
+    <ClCompile Include="RankProfDlg.cpp" />
+    <ClCompile Include="ScoreLine.cpp" />
+    <ClCompile Include="ScoreLineQIBDlg.cpp" />
+    <ClCompile Include="ScoreLineQIBFilterDlg.cpp" />
+    <ClCompile Include="ScoreLineQIBSpecDlg.cpp" />
+    <ClCompile Include="Shortcut.cpp" />
+    <ClCompile Include="ShortcutDlg.cpp" />
+    <ClCompile Include="ShortcutEditDlg.cpp" />
+    <ClCompile Include="Solfisk.cpp" />
+    <ClCompile Include="SortListView.cpp" />
+    <ClCompile Include="TH135Addr.cpp" />
+    <ClCompile Include="TrackRecordDlg.cpp" />
+    <ClCompile Include="TrackRecordFilterDlg.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Autorun.hpp" />
+    <ClInclude Include="Characters.hpp" />
+    <ClInclude Include="Clipboard.hpp" />
+    <ClInclude Include="ColoredRecordView.hpp" />
+    <ClInclude Include="DlgCommon.hpp" />
+    <ClInclude Include="Formatter.hpp" />
+    <ClInclude Include="HttpConn.h" />
+    <ClInclude Include="MainWnd.hpp" />
+    <ClInclude Include="MappedFile.hpp" />
+    <ClInclude Include="Memento.hpp" />
+    <ClInclude Include="MinimalAllocator.hpp" />
+    <ClInclude Include="MinimalArray.hpp" />
+    <ClInclude Include="MinimalFile.hpp" />
+    <ClInclude Include="MinimalMemory.hpp" />
+    <ClInclude Include="MinimalPath.hpp" />
+    <ClInclude Include="MinimalSort.hpp" />
+    <ClInclude Include="MinimalString.hpp" />
+    <ClInclude Include="pch.hpp" />
+    <ClInclude Include="ProfileIO.hpp" />
+    <ClInclude Include="QIBSettings.hpp" />
+    <ClInclude Include="RankProfDlg.hpp" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ScoreLine.hpp" />
+    <ClInclude Include="ScoreLineDlg.hpp" />
+    <ClInclude Include="ScoreLineQIBFilterDlg.hpp" />
+    <ClInclude Include="ScoreLineQIBSpecDlg.hpp" />
+    <ClInclude Include="Shortcut.hpp" />
+    <ClInclude Include="ShortcutDlg.hpp" />
+    <ClInclude Include="ShortcutEditDlg.hpp" />
+    <ClInclude Include="Solfisk.hpp" />
+    <ClInclude Include="SortListView.hpp" />
+    <ClInclude Include="TextFileWriter.hpp" />
+    <ClInclude Include="TH135AddrDef.h" />
+    <ClInclude Include="TrackRecordDlg.hpp" />
+    <ClInclude Include="TrackRecordFilterDlg.hpp" />
+    <ClInclude Include="ComboDlg.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="MinimalProc.asm">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ml.exe /c  /nologo /Fo"$(IntDir)MinimalProc.obj" /W3 /Zi /errorReport:prompt  /Ta %(Identity)</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)MinimalProc.obj</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ml.exe /c  /nologo /Fo"$(IntDir)MinimalProc.obj" /W3 /Zi /errorReport:prompt  /Ta %(Identity)</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)MinimalProc.obj</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Dependencies\lib\sqlite3.dll">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy "%(FullPath)" "$(OutDir)%(Filename)%(Extension)" &gt;NUL</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)%(Filename)%(Extension)</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatOutputAsContent>
+    </CustomBuild>
+    <None Include="stub" />
+    <CustomBuild Include="TH135Addr.ini">
+      <FileType>Document</FileType>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)%(Identity)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy "%(FullPath)" "$(OutDir)%(Identity)" &gt;NUL</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Identity) ...</Message>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatOutputAsContent>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Solfisk.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Solfisk.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="License.txt">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy "%(FullPath)" "$(OutDir)%(Identity)" &gt;NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)%(Identity)</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatOutputAsContent>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Identity) ...</Message>
+    </CustomBuild>
+    <CustomBuild Include="Solfisk.txt">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy "%(FullPath)" "$(OutDir)%(Identity)" &gt;NUL</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Identity) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)%(Identity)</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatOutputAsContent>
+    </CustomBuild>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

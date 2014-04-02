@@ -1,0 +1,316 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 日语(日本) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
+LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
+#pragma code_page(932)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SCORELINE_QIB DIALOGEX 0, 0, 263, 284
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_DLGMODALFRAME
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_LIST_SCORELINE,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,0,0,263,283
+END
+
+IDD_QIBFILTER DIALOGEX 0, 0, 247, 149
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "僇僗僞儉愴愌"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "帺暘懁",IDC_CHECK_P1NAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,22,40,10
+    EDITTEXT        IDC_EDIT_P1NAME,20,34,90,14,ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "儚僀儖僪僇乕僪傪巊偆",IDC_CHECK_P1NAME_LIKE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,36,50,78,10
+    CONTROL         "憡庤懁",IDC_CHECK_P2NAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,131,20,40,10
+    EDITTEXT        IDC_EDIT_P2NAME,131,34,90,14,ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "儚僀儖僪僇乕僪傪巊偆",IDC_CHECK_P2NAME_LIKE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,147,50,78,10
+    CONTROL         "婲揰",IDC_CHECK_DATEBEG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,96,31,10
+    CONTROL         "",IDC_DTP_DATEBEG,"SysDateTimePick32",DTS_RIGHTALIGN | WS_DISABLED | WS_TABSTOP,52,93,55,15
+    LTEXT           "偐傜",IDC_STATIC,110,97,13,8
+    CONTROL         "廔揰",IDC_CHECK_DATEEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,96,28,10
+    CONTROL         "",IDC_DTP_DATEEND,"SysDateTimePick32",DTS_RIGHTALIGN | WS_DISABLED | WS_TABSTOP,157,93,52,15
+    LTEXT           "傑偱",IDC_STATIC,212,97,14,8
+    DEFPUSHBUTTON   "OK",IDOK,132,126,50,14
+    PUSHBUTTON      "僉儍儞僙儖",IDCANCEL,188,126,50,14
+    GROUPBOX        "僾儘僼傽僀儖",IDC_STATIC,8,7,231,63
+    GROUPBOX        "婜娫",IDC_STATIC,8,76,231,40
+END
+
+IDD_PROFSHORTCUT DIALOGEX 0, 0, 279, 145
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "僾儘僼傽僀儖抁弅僉乕偺愝掕"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_LIST_PROFSCKEY,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,7,209,131
+    PUSHBUTTON      "OK",IDOK,223,107,50,14
+    PUSHBUTTON      "僉儍儞僙儖",IDCANCEL,223,124,50,14
+    PUSHBUTTON      "嶍彍",IDC_PROFSC_DEL,223,39,50,14
+    PUSHBUTTON      "曇廤",IDC_PROFSC_EDIT,223,23,50,14
+    PUSHBUTTON      "捛壛",IDC_PROFSC_ADD,223,7,50,14
+END
+
+IDD_PROFSCEDIT DIALOGEX 0, 0, 208, 73
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "僾儘僼傽僀儖抁弅僉乕"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,99,52,50,14
+    PUSHBUTTON      "僉儍儞僙儖",IDCANCEL,153,52,50,14
+    CONTROL         "",IDC_PROFSCKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,5,50,80,14
+    LTEXT           "抁弅僉乕",IDC_STATIC,5,39,30,8
+    LTEXT           "僾儘僼傽僀儖",IDC_STATIC,5,7,36,8
+    EDITTEXT        IDC_PROFSCPATH,5,19,174,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_PROFSCPATH_PREF,180,19,22,14
+END
+
+IDD_TRFILTER DIALOGEX 0, 0, 250, 169
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "懳愴棜楌僼傿儖僞偺愝掕"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "帺暘懁",IDC_STATIC,9,3,111,91
+    CONTROL         "僾儘僼傿乕儖",IDC_CHECK_P1NAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,17,51,10
+    EDITTEXT        IDC_EDIT_P1NAME,20,30,90,14,ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "巊梡僉儍儔",IDC_CHECK_P1CHAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,59,49,10
+    COMBOBOX        IDC_COMBO_P1CHAR,20,72,90,56,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "憡庤懁",IDC_STATIC,129,3,111,91
+    CONTROL         "僾儘僼傿乕儖",IDC_CHECK_P2NAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,17,51,10
+    EDITTEXT        IDC_EDIT_P2NAME,140,30,90,14,ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "巊梡僉儍儔",IDC_CHECK_P2CHAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,59,49,10
+    COMBOBOX        IDC_COMBO_P2CHAR,140,72,90,56,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "婜娫",IDC_STATIC,9,96,231,40
+    CONTROL         "婲揰",IDC_CHECK_DATEBEG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,114,30,10
+    CONTROL         "",IDC_DTP_DATEBEG,"SysDateTimePick32",DTS_RIGHTALIGN | WS_DISABLED | WS_TABSTOP,49,111,56,15
+    LTEXT           "偐傜",IDC_STATIC,109,115,13,8
+    CONTROL         "廔揰",IDC_CHECK_DATEEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,114,30,10
+    CONTROL         "",IDC_DTP_DATEEND,"SysDateTimePick32",DTS_RIGHTALIGN | WS_DISABLED | WS_TABSTOP,160,111,56,15
+    LTEXT           "傑偱",IDC_STATIC,222,116,14,8
+    EDITTEXT        IDC_EDIT_TRMAX,65,146,38,14,ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "",IDC_SPIN_TRMAX,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,95,139,10,14
+    LTEXT           "審",IDC_STATIC,109,149,9,8
+    DEFPUSHBUTTON   "OK",IDOK,137,147,50,14
+    PUSHBUTTON      "僉儍儞僙儖",IDCANCEL,189,147,50,14
+    CONTROL         "審悢惂尷",IDC_CHECK_TRMAX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,148,45,10
+    CONTROL         "儚僀儖僪僇乕僪傪巊偆",IDC_CHECK_P1NAME_LIKE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,31,46,78,10
+    CONTROL         "儚僀儖僪僇乕僪傪巊偆",IDC_CHECK_P2NAME_LIKE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,152,46,78,10
+END
+
+IDD_TRACKRECORD DIALOGEX 0, 0, 377, 223
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_DLGMODALFRAME
+CAPTION "懳愴棜楌"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_LIST_TRACKRECORD,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,0,0,377,223
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_SCORELINE_QIB, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 283
+    END
+
+    IDD_QIBFILTER, DIALOG
+    BEGIN
+    END
+
+    IDD_PROFSHORTCUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 272
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 138
+    END
+
+    IDD_PROFSCEDIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 201
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 66
+    END
+
+    IDD_TRFILTER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 162
+    END
+
+    IDD_TRACKRECORD, DIALOG
+    BEGIN
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU MENU
+BEGIN
+    POPUP "1"
+    BEGIN
+        MENUITEM "懳愴昞傪昞帵偡傞",                    ID_SHOW_SCORELINE
+        MENUITEM "僾儘僼抁弅僉乕愝掕",                   ID_PROFSCKEY
+        MENUITEM SEPARATOR
+        MENUITEM "帺摦僇僂儞僩偟側偄",                   ID_DISABLE_CB
+        MENUITEM "3楢愴偟偨傜僇僂儞僩偟側偄",               ID_TCG_LIMITTER
+        MENUITEM SEPARATOR
+        POPUP "懳愴寢壥僐僺乕"
+        BEGIN
+            MENUITEM "偟側偄",                         ID_INFOTRANS_NONE
+            MENUITEM "憡庤僾儘僼傽僀儖柤",                   ID_INFOTRANS_PROFILE
+            MENUITEM "慡晹",                          ID_INFOTRANS_ALL
+        END
+        MENUITEM SEPARATOR
+        POPUP "帺摦婲摦"
+        BEGIN
+            MENUITEM "怱鉟極偺帺摦婲摦",                    ID_AUTORUN_GAMEPROGRAM_FLIPENABLED
+            MENUITEM "怱鉟極偺僷僗偺愝掕",                   ID_AUTORUN_GAMEPROGRAM_OPENFILENAME
+            MENUITEM SEPARATOR
+            MENUITEM "曬崘僣乕儖偺帺摦婲摦",                  ID_AUTORUN_REPORTTOOL_FLIPENABLED
+            MENUITEM "曬崘僣乕儖偺僷僗偺愝掕",                 ID_AUTORUN_REPORTTOOL_OPENFILENAME
+        END
+        MENUITEM SEPARATOR
+        POPUP "昞帵僆僾僔儑儞"
+        BEGIN
+            MENUITEM "彑棪傪壓堦寘傑偱昞帵",                  ID_GLOBAL_HIGHPRES_RATE
+            MENUITEM "彑攕傪怓暘偗昞帵",                    ID_GLOBAL_COLORFUL_RECORD
+            MENUITEM SEPARATOR
+            MENUITEM "僒僀僘傪帺摦挷愡偡傞(QIB)",             ID_GLOBAL_AUTOADJUSTVIEWRECT
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "廔椆偡傞",                        ID_EXIT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RT_MANIFEST
+//
+
+IDR_241                 RT_MANIFEST             "Solfisk.xml"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN                ICON                    "32.ico"
+IDI_IDLE                ICON                    "16void.ico"
+IDI_ACTIVE              ICON                    "16.ico"
+IDI_LIMIT               ICON                    "16lim.ico"
+#endif    // 日语(日本) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// 中文(简体，中国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_COMBOINFO DIALOGEX 0, 0, 287, 205
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Combo History"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_LIST_COMBOINFO,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,0,0,288,205
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_COMBOINFO, DIALOG
+    BEGIN
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // 中文(简体，中国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
