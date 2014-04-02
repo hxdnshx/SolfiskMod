@@ -14,7 +14,7 @@ namespace ChangeCharset
             
             Encoding shift_js;
             shift_js=Encoding.GetEncoding(932);
-            foreach (var f in new DirectoryInfo(@"D:\Program Files\Alwil Software\Adobe\bcdd\XQL\report\src").GetFiles("*.rb", SearchOption.TopDirectoryOnly))
+            foreach (var f in new DirectoryInfo(@"D:\Program Files\Alwil Software\Adobe\bcdd\XQL\tsksrc\Dependencies\include").GetFiles("*.h", SearchOption.TopDirectoryOnly))
             {
                 string s = File.ReadAllText(f.FullName,shift_js);
                 File.WriteAllText(f.FullName, s, Encoding.UTF8);

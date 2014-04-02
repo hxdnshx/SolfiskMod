@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "HttpConn.h"
 #include "Solfisk.hpp"
 #include <Winhttp.h>
