@@ -148,12 +148,13 @@ static void TH135_OnKO()
 			if(i==lsize-1 || cinfo_p1[i+1].damage==0)
 			{
 				cinfo_p1[i].fin=1;
+				ComboInfo_Append(&(cinfo_p1[i]));
 			}
 			else
 			{
 				cinfo_p1[i].fin=0;
 			}
-			ComboInfo_Append(&(cinfo_p1[i]));
+			
 		}
 		lsize=cinfo_p2.GetSize();
 		for(i=0;i<lsize;++i)
