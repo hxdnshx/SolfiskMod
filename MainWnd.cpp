@@ -15,6 +15,7 @@
 #include "TH135AddrDef.h"
 #include "resource.h"
 #include <stdio.h>
+#include "DebugFunc.hpp"
 
 #define MINIMAL_USE_PROCESSHEAPSTRING
 #include "MinimalPath.hpp"
@@ -286,6 +287,7 @@ static void NotifyMenu_OnInfoTransfer(HWND hwnd, int id)
 
 static void NotifyMenu_OnExit(HWND hwnd)
 {
+	Finalize_LogSys();
 	::DestroyWindow(hwnd);
 }
 
@@ -310,6 +312,13 @@ static void NotifyMenu_OnTcgLimitter(HWND hwnd)
 	::CheckMenuItem(s_hPopupMenu, ID_TCG_LIMITTER,
 		s_tcgLimit ? MF_CHECKED : MF_UNCHECKED);
 	TH135_OnStateChange(TH135AddrGetState(), false);
+}
+
+static void NotifyMenu_OnComboDamage(HWND hwnd)
+{
+	s_RecordCombo=!s_RecordCombo;
+	::CheckMenuItem(s_hPopupMenu, ID_COMBODAMAGE,
+		s_RecordCombo ? MF_CHECKED : MF_UNCHECKED);
 }
 
 static BOOL MainWindow_OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
@@ -375,6 +384,8 @@ static BOOL MainWindow_OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 	s_RecordCombo=g_settings.ReadInteger(_T("General"), _T("RecordCombo"), 0) != 0;
 	s_tcgCount = 0;
 	::CheckMenuItem(s_hPopupMenu, ID_TCG_LIMITTER, s_tcgLimit ? MF_CHECKED : MF_UNCHECKED);
+	::CheckMenuItem(s_hPopupMenu, ID_COMBODAMAGE, s_RecordCombo ? MF_CHECKED : MF_UNCHECKED);
+	
 
 	s_infoTransfer = static_cast<INFOTRANSTYPE>(g_settings.ReadInteger(_T("General"), _T("infoTrans"), INFOTRANS_NONE));
 	if (s_infoTransfer < 0 || s_infoTransfer >= INFOTRANS_MAX) s_infoTransfer = INFOTRANS_NONE;
@@ -403,6 +414,10 @@ static BOOL MainWindow_OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 	Autorun_CheckMenuItem(s_hPopupMenu, _T("ReportTool"), ID_AUTORUN_REPORTTOOL_FLIPENABLED);
 	Autorun_CheckMenuItem(s_hPopupMenu, _T("GameProgram"), ID_AUTORUN_GAMEPROGRAM_FLIPENABLED);
 	if (::GetAsyncKeyState(VK_PAUSE) >= 0) Autorun_Enter(hwnd, _T("GameProgram"));
+
+	WriteToLog(_T("Solfisk : Init\n"));
+	COMBOINFO_ITEM item;
+	ComboInfo_Append(&item);
 
 	return TRUE;
 }
@@ -495,6 +510,7 @@ static void MainWindow_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotif
 	case ID_INFOTRANS_ALL:	NotifyMenu_OnInfoTransfer(hwnd, id); break;
 	case ID_DISABLE_CB:	NotifyMenu_OnDisableTH135Callback(hwnd); break;
 	case ID_TCG_LIMITTER:	NotifyMenu_OnTcgLimitter(hwnd); break;
+	case ID_COMBODAMAGE: NotifyMenu_OnComboDamage(hwnd); break;
 	case ID_SHOW_SCORELINE: NotifyMenu_OnShowScoreLine(hwnd); break;
 	case ID_PROFSCKEY:		NotifyMenu_OnProfileSCKey(hwnd); break;
 	case ID_AUTORUN_GAMEPROGRAM_FLIPENABLED:	NotifyMenu_OnAutorunGameProgramFlipEnabled(hwnd); break;

@@ -2,7 +2,7 @@
 #include "TH135AddrDef.h"
 #include "Solfisk.hpp"
 #include "ScoreLine.hpp"
-#include "HttpConn.h"
+#include "HttpConn.hpp"
 #include <cstdio>
 
 #define MINIMAL_USE_PROCESSHEAPSTRING

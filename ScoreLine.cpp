@@ -1,6 +1,7 @@
 ﻿#include "pch.hpp"
 #include "ScoreLine.hpp"
 #include "TH135AddrDef.h"
+#include "DebugFunc.hpp"
 
 #include <sqlite3.h>
 #include <utility>
@@ -308,6 +309,10 @@ bool ComboInfo_Append(COMBOINFO_ITEM *item)
 	if (rc)
 	{
 		const char* err=sqlite3_errmsg(s_db);
+		Minimal::ProcessHeapStringW str;
+		Minimal::ToUCS2(str,err);
+		str+=_T("\n");
+		WriteToLog(str);
 		return false;
 	}
 

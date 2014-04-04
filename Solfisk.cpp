@@ -3,6 +3,7 @@
 #include "QIBSettings.hpp"
 #include "Mainwnd.hpp"
 #include "Shortcut.hpp"
+#include "DebugFunc.hpp"
 
 #define MINIMAL_USE_PROCESSHEAPSTRING
 #include "MinimalPath.hpp"
@@ -43,6 +44,7 @@ int main()
 	Minimal::ProcessHeapPath settingPath = g_appPath;
 	settingPath /= _T("solfisk.ini");
 	g_settings.SetPath(settingPath);
+	Initial_LogSys();
 
 	return !MainWindow_Initialize() ? -1
 		: Application_Run();
@@ -61,6 +63,7 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	settingPath /= _T("tsk.ini");
 	OutputDebugString(settingPath);
 	g_settings.SetPath(settingPath);
+	Initial_LogSys();
 
 	return 	
 		!MainWindow_Initialize() ? -1

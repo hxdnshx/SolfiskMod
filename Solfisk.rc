@@ -212,6 +212,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "自動カウントしない",                   ID_DISABLE_CB
         MENUITEM "3連戦したらカウントしない",               ID_TCG_LIMITTER
+        MENUITEM "コンボダメージ記録",                   ID_COMBODAMAGE
         MENUITEM SEPARATOR
         POPUP "対戦結果コピー"
         BEGIN

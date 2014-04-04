@@ -121,6 +121,7 @@
     <ClCompile Include="Clipboard.cpp" />
     <ClCompile Include="ColoredRecordView.cpp" />
     <ClCompile Include="ComboDlg.cpp" />
+    <ClCompile Include="DebugFunc.cpp" />
     <ClCompile Include="HttpConn.cpp" />
     <ClCompile Include="MainWnd.cpp" />
     <ClCompile Include="Memento.cpp" />
@@ -151,9 +152,10 @@
     <ClInclude Include="Characters.hpp" />
     <ClInclude Include="Clipboard.hpp" />
     <ClInclude Include="ColoredRecordView.hpp" />
+    <ClInclude Include="DebugFunc.hpp" />
     <ClInclude Include="DlgCommon.hpp" />
     <ClInclude Include="Formatter.hpp" />
-    <ClInclude Include="HttpConn.h" />
+    <ClInclude Include="HttpConn.hpp" />
     <ClInclude Include="MainWnd.hpp" />
     <ClInclude Include="MappedFile.hpp" />
     <ClInclude Include="Memento.hpp" />
