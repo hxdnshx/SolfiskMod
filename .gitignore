@@ -27,9 +27,9 @@ _ReSharper*/
 [Tt]est[Rr]esult*
 *.vssscc
 $tf*/
-*.opensdf
-*.sdf
 *.ipch
 *.backup
-Solfisk.sdf
-Solfisk.sdf
+*.opensdf
+*.sdf
+*.db
+Default.db
