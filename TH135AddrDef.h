@@ -98,6 +98,21 @@ TH135STATE TH135AddrGetState();
 const TH135CHARNAME * const TH135AddrGetCharName(int index);
 int TH135AddrGetCharCount();
 
+inline double GetLifeReduce(int life)
+{
+	return life>=5000 ? 1 : (75+life*0.0025)/100;
+}
+
+inline double GetLifeReduceDamage(int life,int damage)
+{
+	return life>=5000 ? damage : damage*(75+life*0.0025)/100;
+}
+
+inline double GetOriginDamageLR(int life,int damage)
+{
+	return life>=5000 ? damage : damage*100/(75+life*0.0025);
+}
+
 
 #ifdef __cplusplus
 }

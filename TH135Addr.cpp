@@ -119,6 +119,8 @@ public:
 	}
 };
 
+
+
 static bool EnumRTChild(LPCSTR path,int level)
 {
 	DWORD_PTR items;

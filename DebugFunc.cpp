@@ -26,6 +26,11 @@ void WriteToLog(Minimal::MinimalStringT<wchar_t> str)
 	DWORD dwSize=0;
 	DWORD size=str.GetSize()*sizeof(wchar_t);
 	DWORD r=WriteFile(hf,str.GetRaw(),size,&dwSize,NULL);
+
+	wchar_t crlf[2]={0x000D,0x000A};
+	size=2*sizeof(wchar_t);
+	dwSize=0;
+	r=WriteFile(hf,crlf,size,&dwSize,NULL);
 	if(FAILED(r))
 	{
 		int i=3;
@@ -49,6 +54,12 @@ void WriteToLog(LPCVOID ptr,int size)
 	DWORD dwPos = SetFilePointer(hf, 0, NULL, FILE_END); 
 	DWORD dwSize=0;
 	WriteFile(hf,ptr,size,&dwSize,NULL);
+
+	
+	wchar_t crlf[2]={0x000D,0x000A};
+	size=2*sizeof(wchar_t);
+	dwSize=0;
+	DWORD r=WriteFile(hf,crlf,size,&dwSize,NULL);
 	CloseHandle(hf);
 }
 
@@ -69,6 +80,12 @@ void WriteToLog(LPCWSTR ptr)
 	DWORD dwSize=0;
 	DWORD size=wcslen(ptr)*sizeof(wchar_t);
 	DWORD r=WriteFile(hf,ptr,size,&dwSize,NULL);
+
+	
+	wchar_t crlf[2]={0x000D,0x000A};
+	size=2*sizeof(wchar_t);
+	dwSize=0;
+	r=WriteFile(hf,crlf,size,&dwSize,NULL);
 	if(!r)
 	{
 		int i=3;
