@@ -246,12 +246,14 @@ static void TH135_OnParamChange(WORD param1, LPARAM param2)
 			GetLocalTime(&loctime);
 			SystemTimeToFileTime(&loctime, (LPFILETIME)&input.timestamp);
 			cinfo_p2.Push(input);
-#ifdef _DEBUG
+#ifdef _SPECIAL
+			
 			if(input.hit>1 && cinfo_p2.GetSize()>=2)
 			{
 				input.damage=(input.damage - cinfo_p2[cinfo_p2.GetSize()-2].damage)*100/cinfo_p2[cinfo_p2.GetSize()-2].rate;//rate
 				input.damage=GetOriginDamageLR(cinfo_p2[cinfo_p2.GetSize()-2].currenthp,input.damage);
 			}
+			
 			wchar_t str[255];
 			BuildDamageInfoStr(input,str);
 			WriteToLog(str);
@@ -269,12 +271,14 @@ static void TH135_OnParamChange(WORD param1, LPARAM param2)
 			GetLocalTime(&loctime);
 			SystemTimeToFileTime(&loctime, (LPFILETIME)&input.timestamp);
 			cinfo_p1.Push(input);
-#ifdef _DEBUG
+#ifdef _SPECIAL
+			
 			if(input.hit>1 && cinfo_p1.GetSize()>=2)
 			{
 				input.damage=(input.damage - cinfo_p1[cinfo_p1.GetSize()-2].damage)*100/cinfo_p1[cinfo_p1.GetSize()-2].rate;//rate
 				input.damage=GetOriginDamageLR(cinfo_p1[cinfo_p1.GetSize()-2].currenthp,input.damage);
 			}
+			
 			wchar_t str[255];
 			BuildDamageInfoStr(input,str);
 			WriteToLog(str);

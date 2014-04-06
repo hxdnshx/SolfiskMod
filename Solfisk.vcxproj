@@ -9,6 +9,10 @@
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="SpecialRelease|Win32">
+      <Configuration>SpecialRelease</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1BC2A047-1694-4C8A-AF3F-EF8635172D08}</ProjectGuid>
@@ -30,6 +34,14 @@
     <CharacterSet>Unicode</CharacterSet>
     <UseOfAtl>false</UseOfAtl>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfAtl>false</UseOfAtl>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -39,12 +51,20 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="SpecialRelease.props" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
@@ -110,6 +130,50 @@
       </ResourceOutputFileName>
     </ManifestResourceCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MinSpace</Optimization>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;USE_AUTORUN;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)Dependencies\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ExceptionHandling>false</ExceptionHandling>
+      <StringPooling>true</StringPooling>
+      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>sqlite3.lib;shlwapi.lib;psapi.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <EntryPointSymbol>EntryPoint</EntryPointSymbol>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalManifestDependencies>
+      </AdditionalManifestDependencies>
+    </Link>
+    <Manifest>
+      <InputResourceManifests>
+      </InputResourceManifests>
+      <AdditionalManifestFiles>
+      </AdditionalManifestFiles>
+      <OutputManifestFile>
+      </OutputManifestFile>
+    </Manifest>
+    <ManifestResourceCompile>
+      <ResourceOutputFileName>
+      </ResourceOutputFileName>
+    </ManifestResourceCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <Image Include="16.ico" />
     <Image Include="16lim.ico" />
@@ -121,6 +185,7 @@
     <ClCompile Include="Clipboard.cpp" />
     <ClCompile Include="ColoredRecordView.cpp" />
     <ClCompile Include="ComboDlg.cpp" />
+    <ClCompile Include="ComboRecognize.cpp" />
     <ClCompile Include="DebugFunc.cpp" />
     <ClCompile Include="HttpConn.cpp" />
     <ClCompile Include="MainWnd.cpp" />
@@ -129,6 +194,7 @@
     <ClCompile Include="MinimalMemory.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ProfileIO.cpp" />
@@ -152,6 +218,7 @@
     <ClInclude Include="Characters.hpp" />
     <ClInclude Include="Clipboard.hpp" />
     <ClInclude Include="ColoredRecordView.hpp" />
+    <ClInclude Include="ComboRecognize.hpp" />
     <ClInclude Include="DebugFunc.hpp" />
     <ClInclude Include="DlgCommon.hpp" />
     <ClInclude Include="Formatter.hpp" />
@@ -190,26 +257,38 @@
     <CustomBuild Include="MinimalProc.asm">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ml.exe /c  /nologo /Fo"$(IntDir)MinimalProc.obj" /W3 /Zi /errorReport:prompt  /Ta %(Identity)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">ml.exe /c  /nologo /Fo"$(IntDir)MinimalProc.obj" /W3 /Zi /errorReport:prompt  /Ta %(Identity)</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)MinimalProc.obj</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">$(IntDir)MinimalProc.obj</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ml.exe /c  /nologo /Fo"$(IntDir)MinimalProc.obj" /W3 /Zi /errorReport:prompt  /Ta %(Identity)</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)MinimalProc.obj</Outputs>
     </CustomBuild>
     <CustomBuild Include="Dependencies\lib\sqlite3.dll">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy "%(FullPath)" "$(OutDir)%(Filename)%(Extension)" &gt;NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">copy "%(FullPath)" "$(OutDir)%(Filename)%(Extension)" &gt;NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">Deploying %(Filename)%(Extension) ...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)%(Filename)%(Extension)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">$(OutDir)%(Filename)%(Extension)</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">false</LinkObjects>
       <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatOutputAsContent>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">true</TreatOutputAsContent>
     </CustomBuild>
     <None Include="stub" />
     <CustomBuild Include="TH135Addr.ini">
       <FileType>Document</FileType>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)%(Identity)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">$(OutDir)%(Identity)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy "%(FullPath)" "$(OutDir)%(Identity)" &gt;NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">copy "%(FullPath)" "$(OutDir)%(Identity)" &gt;NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Identity) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">Deploying %(Identity) ...</Message>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">false</LinkObjects>
       <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatOutputAsContent>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">true</TreatOutputAsContent>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -221,19 +300,31 @@
   <ItemGroup>
     <CustomBuild Include="License.txt">
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy "%(FullPath)" "$(OutDir)%(Identity)" &gt;NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">copy "%(FullPath)" "$(OutDir)%(Identity)" &gt;NUL</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)%(Identity)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">$(OutDir)%(Identity)</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">false</LinkObjects>
       <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatOutputAsContent>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">true</TreatOutputAsContent>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">
+      </AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Identity) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">Deploying %(Identity) ...</Message>
     </CustomBuild>
     <CustomBuild Include="Solfisk.txt">
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy "%(FullPath)" "$(OutDir)%(Identity)" &gt;NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">copy "%(FullPath)" "$(OutDir)%(Identity)" &gt;NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Identity) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">Deploying %(Identity) ...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)%(Identity)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">$(OutDir)%(Identity)</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">false</LinkObjects>
       <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatOutputAsContent>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='SpecialRelease|Win32'">true</TreatOutputAsContent>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

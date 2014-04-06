@@ -522,10 +522,10 @@ static TH135STATE TH135StateWaitForNetBattle()
 		(::FindRTChild("network_is_watch", childType, childVal) && (childType & 0x8) != 0 && childVal == 0)) {
 		return TH135STATE_NETBATTLE;
 	} else {
-#ifndef _DEBUG
-		return TH135STATE_WAITFORNETBATTLE;
-#else
+#if defined(_DEBUG) || defined(_SPECIAL)
 		return TH135STATE_NETBATTLE;
+#else
+		return TH135STATE_WAITFORNETBATTLE;
 #endif
 	}
 }

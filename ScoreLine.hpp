@@ -125,6 +125,7 @@ struct COMBOINFO_FILTER_DESC
 		{
 			fin=src.fin;
 		}
+		return *this;
 	}
 };
 
