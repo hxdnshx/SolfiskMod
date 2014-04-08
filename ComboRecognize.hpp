@@ -53,3 +53,13 @@ struct COMBOREC_ITEM
 	int rate;
 	int stun;
 };
+
+void ComboRec_SetPath(LPCTSTR path);
+LPCTSTR ComboRec_GetPath();
+bool ComboRec_QueryRecord(COMBOREC_FILTER_DESC &filterDesc, void(*callback)(COMBOREC_ITEM *,void *), void *user);
+bool ComboRec_Remove(COMBOREC_FILTER_DESC &filterDesc);
+bool ComboRec_Append(COMBOREC_ITEM *item);
+bool ScoreLine_Open(bool create);
+void ComboRec_Enter();
+void ComboRec_Leave(bool failed);
+void ComboRec_Close();

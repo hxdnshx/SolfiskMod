@@ -4,7 +4,7 @@
 #include <Winhttp.h>
 
 #pragma comment(lib,"winhttp")
-/*
+
 #define MINIMAL_USE_PROCESSHEAPSTRING
 #include "MinimalPath.hpp"
 
@@ -181,4 +181,3 @@ int HttpRequestPost(Minimal::MinimalStringT<wchar_t> &host,Minimal::MinimalStrin
     if (hSession) WinHttpCloseHandle(hSession);
 	return err;
 }
-*/
