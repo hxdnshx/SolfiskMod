@@ -15,6 +15,7 @@
 #include "TH135AddrDef.h"
 #include "resource.h"
 #include <stdio.h>
+#include "ComboRecognize.hpp"
 #include "DebugFunc.hpp"
 
 #define MINIMAL_USE_PROCESSHEAPSTRING
@@ -141,8 +142,19 @@ static void TH135_OnKO()
 		int i;
 		int lsize;
 		lsize=cinfo_p1.GetSize();
+		COMBOREC_ITEM delta;
+		int deltahit=0;
+		delta.damage=0;
+		delta.stun=0;
+		delta.rate=0;
+		delta.pid=item.p1id;
 		for(i=0;i<lsize;++i)
 		{
+			delta.damage=cinfo_p1[i].damage-delta.damage;
+			delta.stun=cinfo_p1[i].stun-delta.stun;
+			delta.rate=cinfo_p1[i].rate-delta.rate;
+			delta.isstunMax=cinfo_p1[i].stun>=100;
+			delta.israteMin=cinfo_p1[i].rate<=10;
 			cinfo_p1[i].pid=item.p1id;
 			lstrcpyA(cinfo_p1[i].pname,item.p1name);
 			cinfo_p1[i].battle=item.timestamp;
@@ -155,11 +167,24 @@ static void TH135_OnKO()
 			{
 				cinfo_p1[i].fin=0;
 			}
-			
+			delta.damage=cinfo_p1[i].damage;
+			delta.stun=cinfo_p1[i].stun;
+			delta.rate=cinfo_p1[i].rate;
 		}
+
+		deltahit=0;
+		delta.damage=0;
+		delta.stun=0;
+		delta.rate=0;
+		delta.pid=item.p2id;
 		lsize=cinfo_p2.GetSize();
 		for(i=0;i<lsize;++i)
 		{
+			delta.damage=cinfo_p2[i].damage-delta.damage;
+			delta.stun=cinfo_p2[i].stun-delta.stun;
+			delta.rate=cinfo_p2[i].rate-delta.rate;
+			delta.isstunMax=cinfo_p2[i].stun>=100;
+			delta.israteMin=cinfo_p2[i].rate<=10;
 			cinfo_p2[i].pid=item.p2id;
 			lstrcpyA(cinfo_p2[i].pname,item.p2name);
 			cinfo_p2[i].battle=item.timestamp;
@@ -172,7 +197,9 @@ static void TH135_OnKO()
 			{
 				cinfo_p2[i].fin=0;
 			}
-			
+			delta.damage=cinfo_p2[i].damage;
+			delta.stun=cinfo_p2[i].stun;
+			delta.rate=cinfo_p2[i].rate;
 		}
 		cinfo_p1.Clear();
 		cinfo_p2.Clear();
@@ -385,6 +412,34 @@ static BOOL MainWindow_OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 		} while(!ScoreLine_Open(true));
 	}
 
+	g_settings.ReadString(_T("General"), _T("BaseData"), _T(""), profPathBuff, _countof(profPathBuff));
+
+	if (profPathBuff[0] == 0) {
+		profPath = g_appPath;
+		profPath /= _T("BaseData.db");
+		createProfile = true;
+	} else {
+		profPath = profPathBuff;
+		createProfile = false;
+	}
+	ComboRec_SetPath(profPath);
+	if (!ComboRec_Open(createProfile)) {
+		OPENFILENAME ofn;
+		ZeroMemory(&ofn, sizeof ofn);
+		ofn.lStructSize = sizeof ofn;
+		ofn.hwndOwner = hwnd;
+		ofn.lpstrFile = profPathBuff;
+		ofn.nMaxFile = _countof(profPathBuff);
+		ofn.lpstrDefExt = _T("db");
+		ofn.lpstrFilter = _T("TrackRecord Database (*.db)\0*.db\0");
+		ofn.Flags = OFN_CREATEPROMPT | OFN_NOCHANGEDIR;
+		do {
+			::MessageBox(hwnd, _T("ベースデータのマッピングに失敗しました。"), NULL, MB_OK | MB_ICONSTOP);
+			if (!::GetOpenFileName(&ofn)) return FALSE;
+			ComboRec_SetPath(profPathBuff);
+		} while(!ComboRec_Open(true));
+	}
+
 	s_WM_TASKBAR_CREATED = RegisterWindowMessage(_T("TaskbarCreated"));
 
 	s_nid.cbSize = sizeof(s_nid);
@@ -457,6 +512,7 @@ static void MainWindow_OnDestroy(HWND hwnd)
 		::DestroyWindow(s_hScoreLineDlg);
 
 	g_settings.WriteString(_T("General"), _T("Profile"), ScoreLine_GetPath());
+	g_settings.WriteString(_T("General"), _T("BaseData"), ComboRec_GetPath());
 	g_settings.WriteInteger(_T("General"), _T("tcgLimit"), s_tcgLimit);
 	g_settings.WriteInteger(_T("General"), _T("RecordCombo"), s_RecordCombo);
 
@@ -483,6 +539,8 @@ static void MainWindow_OnDestroy(HWND hwnd)
 	Shortcut_Finalize();
 
 	ScoreLine_Close();
+
+	ComboRec_Close();
 
 	::PostQuitMessage(0);
 }

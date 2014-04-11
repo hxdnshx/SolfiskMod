@@ -12,6 +12,7 @@
 #include "MinimalArray.hpp"
 
 using Minimal::MinimalStringT;
+/*
 
 int HttpRequestGet(Minimal::MinimalStringT<wchar_t> &host,Minimal::MinimalStringT<wchar_t> &addr, Minimal::MinimalStringT<char> &receive)
 {
@@ -181,3 +182,5 @@ int HttpRequestPost(Minimal::MinimalStringT<wchar_t> &host,Minimal::MinimalStrin
     if (hSession) WinHttpCloseHandle(hSession);
 	return err;
 }
+
+*/

@@ -52,6 +52,8 @@ struct COMBOREC_ITEM
 	int damage;
 	int rate;
 	int stun;
+	bool isstunMax;
+	bool israteMin;
 };
 
 void ComboRec_SetPath(LPCTSTR path);
@@ -59,7 +61,8 @@ LPCTSTR ComboRec_GetPath();
 bool ComboRec_QueryRecord(COMBOREC_FILTER_DESC &filterDesc, void(*callback)(COMBOREC_ITEM *,void *), void *user);
 bool ComboRec_Remove(COMBOREC_FILTER_DESC &filterDesc);
 bool ComboRec_Append(COMBOREC_ITEM *item);
-bool ScoreLine_Open(bool create);
+bool ComboRec_Open(bool create);
 void ComboRec_Enter();
 void ComboRec_Leave(bool failed);
 void ComboRec_Close();
+void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t> &ret,int hit,int prevlife,int prevrate);

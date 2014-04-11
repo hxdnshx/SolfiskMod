@@ -12,7 +12,12 @@
 #define MINIMAL_USE_PROCESSHEAPSTRING
 #include "MinimalPath.hpp"
 
+#define MINIMAL_USE_PROCESSHEAPARRAY
+#include "MinimalArray.hpp"
+
 #define RECORD_TABLE "DamageInfo"
+#define EPSILONDAMAGE 2
+#define EPSILONRATE 1
 
 static sqlite3 *s_ddb;
 static bool s_Enteredview;
@@ -232,5 +237,122 @@ void ComboRec_Close()
 	if (s_ddb) {
 		sqlite3_close(s_ddb);
 		s_ddb = NULL;
+	}
+}
+
+inline bool equal(double a,double b,int EPSILON)
+{
+	return a>b-EPSILON && a<b+EPSILON;
+}
+inline bool equal(int a,int b,int EPSILON)
+{
+	return a>b-EPSILON && a<b+EPSILON;
+}
+
+void ComboRec_AnalysisCallBack(COMBOREC_ITEM *src,void *user)
+{
+	Minimal::MinimalArrayT<COMBOREC_ITEM> *list=reinterpret_cast<Minimal::MinimalArrayT<COMBOREC_ITEM>*>(user);
+	list->Push(*src);
+}
+
+void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t> &ret,int hit,int prevlife,int prevrate)
+{
+	//Search
+	COMBOREC_FILTER_DESC filter;
+	filter.mask|=COMBOREC_FILTER__DAMAGE;
+	filter.damage_l=0;
+	filter.damage_h=src.damage+EPSILONDAMAGE;
+	if((!src.israteMin) || src.rate>0)
+	{
+		filter.mask|=COMBOREC_FILTER__RATE;
+		filter.rate_l=src.rate-EPSILONRATE;
+		filter.rate_h=(src.israteMin?120:(src.rate+EPSILONRATE));
+	}
+	if((!src.isstunMax) || src.stun>0)
+	{
+		filter.mask|=COMBOREC_FILTER__STUN;
+		filter.stun_l=src.stun-EPSILONRATE;
+		filter.stun_h=(src.isstunMax?120:(src.stun+EPSILONRATE));
+	}
+	filter.pid=src.pid;
+	filter.mask|=COMBOREC_FILTER__PID;
+
+	//Calc
+	Minimal::MinimalArrayT<COMBOREC_ITEM> list(&Minimal::g_allocator);
+
+	ComboRec_QueryRecord(filter,ComboRec_AnalysisCallBack,&list);
+
+	int i;
+	bool flag=false;
+	int cnt=list.GetSize();
+	int *stat=(int*)Minimal::g_allocator.Allocate(sizeof(int) * hit);
+	int curlife,currate;
+	int curdam;
+	int alldam;
+	int outcnt=0;
+
+
+	ZeroMemory(stat,sizeof(int)*hit);
+	for(;;)
+	{
+		//½øÎ»Ä£Äâ
+		for(i=hit;i>=0;i--)
+		{
+			if(stat[i]>=cnt)
+			{
+				if(i==0)
+				{
+					flag=true;
+					break;
+				}
+				else
+				{
+					++(stat[i-1]);
+					stat[i]=0;
+				}
+			}
+		}
+
+		if(flag)
+		{
+			break;
+		}
+
+		curlife=prevlife;
+		currate=prevrate;
+		alldam=0;
+		for(i=0;i<hit;++i)
+		{
+			curdam=(list[stat[i]].damage)*currate/100;
+			curdam=GetLifeReduceDamage(curlife,curdam);
+			alldam+=curdam;
+			curlife-=curdam;
+			currate-=list[stat[i]].rate;
+			currate=currate>=10?currate:10;
+		}
+		if(equal(alldam,src.damage,EPSILONDAMAGE))
+		{
+			if(outcnt>0)
+			{
+				ret+=_T(" || ");
+			}
+			if(hit>1)
+			{
+				ret+=_T("(");
+			}
+			for(i=0;i<hit;i++)
+			{
+				if(i!=0)
+				{
+					ret+=_T(" ");
+				}
+				ret+=MinimalA2T(list[stat[i]].txt);
+			}
+			if(hit>1)
+			{
+				ret+=_T(")");
+			}
+		}
+		++(stat[hit-1]);
 	}
 }

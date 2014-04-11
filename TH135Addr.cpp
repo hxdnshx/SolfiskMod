@@ -4,6 +4,7 @@
 #include "ScoreLine.hpp"
 #include "HttpConn.hpp"
 #include <cstdio>
+#include "ComboRecognize.hpp"
 
 #define MINIMAL_USE_PROCESSHEAPSTRING
 #include "MinimalPath.hpp"
@@ -513,6 +514,9 @@ static TH135STATE TH135StateWaitForNetBattle()
 	//::EnumRTChild("actor/player1/tempAtkData/",3);
 	//COMBOINFO_ITEM it;
 	//ComboInfo_Append(&it);
+
+	//对于ComboRec_Analysis的测试用例
+
 
 
 
