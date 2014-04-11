@@ -47,7 +47,7 @@ static void ComboRec_UserFunc_AnsiToUTF8(sqlite3_context *context, int argc, sql
 static void ComboRec_ConstructFilter(Minimal::ProcessHeapStringA &ret, COMBOREC_FILTER_DESC& filterDesc)
 {
 	char buff[128];
-	ret+=" WHERE";
+	ret+=" WHERE ";
 
 	int count=0;
 	for(int i=1;i<=COMBOREC_FILTER__MAX;i<<=1)
@@ -56,7 +56,7 @@ static void ComboRec_ConstructFilter(Minimal::ProcessHeapStringA &ret, COMBOREC_
 		switch(filterDesc.mask & i)
 		{
 		case COMBOREC_FILTER__PID:
-			sqlite3_snprintf(_countof(buff), buff, "pid = '%q'", filterDesc.pid);
+			sqlite3_snprintf(_countof(buff), buff, "pid = %d", filterDesc.pid);
 			ret += buff;
 			++count;
 			break;
@@ -99,7 +99,7 @@ int ComboRec_QueryCallback(void *user,int argc,char **argv,char **colName)
 
 bool ComboRec_QueryRecord(COMBOREC_FILTER_DESC &filterDesc, void(*callback)(COMBOREC_ITEM *,void *), void *user)
 {
-	if(s_ddb) return false;
+	if(!s_ddb) return false;
 
 	Minimal::ProcessHeapStringT<char> filterStr;
 	ComboRec_ConstructFilter(filterStr, filterDesc);
@@ -108,8 +108,8 @@ bool ComboRec_QueryRecord(COMBOREC_FILTER_DESC &filterDesc, void(*callback)(COMB
 		=std::make_pair(callback,user);
 	char *query;
 	query = sqlite3_mprintf(
-		"SELECT txt,damage,rate,stun"
-		"FROM" RECORD_TABLE "AS T %s",
+		"SELECT txt,damage,rate,stun "
+		"FROM " RECORD_TABLE " AS T %s",
 		filterStr.GetRaw()
 		);
 	int rc=sqlite3_exec(s_ddb,query,ComboRec_QueryCallback,(void*)&cbinfo,NULL);
@@ -261,7 +261,7 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 	COMBOREC_FILTER_DESC filter;
 	filter.mask|=COMBOREC_FILTER__DAMAGE;
 	filter.damage_l=0;
-	filter.damage_h=src.damage+EPSILONDAMAGE;
+	filter.damage_h=GetOriginDamageLR(prevlife,src.damage*100/prevrate)+EPSILONDAMAGE;
 	if((!src.israteMin) || src.rate>0)
 	{
 		filter.mask|=COMBOREC_FILTER__RATE;
@@ -296,7 +296,7 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 	for(;;)
 	{
 		//½øÎ»Ä£Äâ
-		for(i=hit;i>=0;i--)
+		for(i=hit-1;i>=0;i--)
 		{
 			if(stat[i]>=cnt)
 			{
@@ -354,5 +354,7 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 			}
 		}
 		++(stat[hit-1]);
+		++outcnt;
 	}
+	Minimal::g_allocator.Deallocate(stat);
 }

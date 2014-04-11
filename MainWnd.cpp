@@ -29,6 +29,8 @@
 #define UM_NOTIFYICON (WM_APP + 1)
 #define UM_TH135CALLBACK (WM_APP + 10)
 
+#define _SPECIAL
+
 // 戦績記録時のクリップボード転送種別
 enum INFOTRANSTYPE {
 	INFOTRANS_NONE = 0,
@@ -152,7 +154,7 @@ static void TH135_OnKO()
 		{
 			delta.damage=cinfo_p1[i].damage-delta.damage;
 			delta.stun=cinfo_p1[i].stun-delta.stun;
-			delta.rate=cinfo_p1[i].rate-delta.rate;
+			delta.rate=delta.rate - cinfo_p1[i].rate;
 			delta.isstunMax=cinfo_p1[i].stun>=100;
 			delta.israteMin=cinfo_p1[i].rate<=10;
 			cinfo_p1[i].pid=item.p1id;
@@ -182,7 +184,7 @@ static void TH135_OnKO()
 		{
 			delta.damage=cinfo_p2[i].damage-delta.damage;
 			delta.stun=cinfo_p2[i].stun-delta.stun;
-			delta.rate=cinfo_p2[i].rate-delta.rate;
+			delta.rate=delta.rate - cinfo_p2[i].rate;
 			delta.isstunMax=cinfo_p2[i].stun>=100;
 			delta.israteMin=cinfo_p2[i].rate<=10;
 			cinfo_p2[i].pid=item.p2id;
@@ -275,15 +277,32 @@ static void TH135_OnParamChange(WORD param1, LPARAM param2)
 			cinfo_p2.Push(input);
 #ifdef _SPECIAL
 			
+			
+			COMBOREC_ITEM item;
+			Minimal::ProcessHeapStringW wstr;
+			if(cinfo_p2.GetSize()>=2 && input.hit>0)
+			{
+				item.pid=s_paramOld[TH135PARAM_P2CHAR];
+				item.damage=input.damage - cinfo_p2[cinfo_p2.GetSize()-2].damage;
+				item.rate=cinfo_p2[cinfo_p2.GetSize()-2].rate - input.rate;
+				item.stun=input.stun - cinfo_p2[cinfo_p2.GetSize()-2].stun;
+				item.israteMin=(input.rate<=10);
+				item.isstunMax=(input.stun>=100);
+				ComboRec_Analysis(item,wstr,input.hit - cinfo_p2[cinfo_p2.GetSize()-2].hit,cinfo_p2[cinfo_p2.GetSize()-2].currenthp,cinfo_p2[cinfo_p2.GetSize()-2].rate);
+			}
+			int tmp=input.damage;
 			if(input.hit>1 && cinfo_p2.GetSize()>=2)
 			{
+
 				input.damage=(input.damage - cinfo_p2[cinfo_p2.GetSize()-2].damage)*100/cinfo_p2[cinfo_p2.GetSize()-2].rate;//rate
 				input.damage=GetOriginDamageLR(cinfo_p2[cinfo_p2.GetSize()-2].currenthp,input.damage);
 			}
-			
+
 			wchar_t str[255];
 			BuildDamageInfoStr(input,str);
 			WriteToLog(str);
+			WriteToLog(wstr);
+			input.damage=tmp;
 #endif
 		}
 		if(cinfo_p1.GetSize()==0 || (s_paramOld[PL2P(1)]!=cinfo_p1.Top().damage && s_paramOld[PL2P(3)]!=cinfo_p1.Top().hit))
@@ -300,15 +319,32 @@ static void TH135_OnParamChange(WORD param1, LPARAM param2)
 			cinfo_p1.Push(input);
 #ifdef _SPECIAL
 			
+			
+			
+			
+			COMBOREC_ITEM item;
+			Minimal::ProcessHeapStringW wstr;
+			if(cinfo_p1.GetSize()>=2 && input.hit>0)
+			{
+				item.pid=s_paramOld[TH135PARAM_P1CHAR];
+				item.damage=input.damage - cinfo_p1[cinfo_p1.GetSize()-2].damage;
+				item.rate=cinfo_p1[cinfo_p1.GetSize()-2].rate - input.rate;
+				item.stun=input.stun - cinfo_p1[cinfo_p1.GetSize()-2].stun;
+				item.israteMin=(input.rate<=10);
+				item.isstunMax=(input.stun>=100);
+				ComboRec_Analysis(item,wstr,input.hit - cinfo_p1[cinfo_p1.GetSize()-2].hit,cinfo_p1[cinfo_p1.GetSize()-2].currenthp,cinfo_p1[cinfo_p1.GetSize()-2].rate);
+			}
+			int tmp=input.damage;
 			if(input.hit>1 && cinfo_p1.GetSize()>=2)
 			{
 				input.damage=(input.damage - cinfo_p1[cinfo_p1.GetSize()-2].damage)*100/cinfo_p1[cinfo_p1.GetSize()-2].rate;//rate
 				input.damage=GetOriginDamageLR(cinfo_p1[cinfo_p1.GetSize()-2].currenthp,input.damage);
 			}
-			
 			wchar_t str[255];
 			BuildDamageInfoStr(input,str);
 			WriteToLog(str);
+			WriteToLog(wstr);
+			input.damage=tmp;
 #endif
 		}
 	}

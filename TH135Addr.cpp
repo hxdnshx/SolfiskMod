@@ -515,8 +515,6 @@ static TH135STATE TH135StateWaitForNetBattle()
 	//COMBOINFO_ITEM it;
 	//ComboInfo_Append(&it);
 
-	//对于ComboRec_Analysis的测试用例
-
 
 
 
@@ -596,6 +594,17 @@ static DWORD WINAPI TH135AddrWorkThread(LPVOID)
 		case TH135STATE_NETBATTLE:           s_TH135State = TH135StateNetBattle(); break;
 		};
 		::SleepEx(POLL_INTERVAL, TRUE);
+
+		//对于ComboRec_Analysis的测试用例
+		/*
+		static COMBOREC_ITEM item;
+		Minimal::ProcessHeapStringW str;
+		static int hit=1;
+		static int life=10000;
+		static int rate=100;
+		ComboRec_Analysis(item,str,hit,life,rate);
+		*/
+
 	}
 	::ExitThread(0);
 	return 0;
@@ -662,86 +671,7 @@ DWORD_PTR TH135AddrGetParam(int param)
 			return childVal;
 		}
 		break;
-	case TH135PARAM_P1HPB:
-		if(::FindRTChild("act/BattleStatus/global/status/p1/hp_b", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P1HPF:
-		if(::FindRTChild("act/BattleStatus/global/status/p1/hp_f", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P2HPB:
-		if(::FindRTChild("act/BattleStatus/global/status/p2/hp_b", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P2HPF:
-		if(::FindRTChild("act/BattleStatus/global/status/p2/hp_f", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P1GOOD:
-		if(::FindRTChild("act/BattleStatus/global/status/p1/good", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P2GOOD:
-		if(::FindRTChild("act/BattleStatus/global/status/p2/good", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P1HATE:
-		if(::FindRTChild("act/BattleStatus/global/status/p1/hate", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P2HATE:
-		if(::FindRTChild("act/BattleStatus/global/status/p2/hate", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P1HIT:
-		if(::FindRTChild("act/BattleStatus/global/status/p1/hit", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P2HIT:
-		if(::FindRTChild("act/BattleStatus/global/status/p2/hit", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P1RATE:
-		if(::FindRTChild("act/BattleStatus/global/status/p1/rate", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P2RATE:
-		if(::FindRTChild("act/BattleStatus/global/status/p2/rate", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P2DAM:
-		if(::FindRTChild("act/BattleStatus/global/status/p2/damage", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P1DAM:
-		if(::FindRTChild("act/BattleStatus/global/status/p1/damage", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P1STUN:
-		if(::FindRTChild("act/BattleStatus/global/status/p1/stun", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
-	case TH135PARAM_P2STUN:
-		if(::FindRTChild("act/BattleStatus/global/status/p2/stun", childType, childVal) && (childType & 0xFFFFF) == 0x02) { 
-			return childVal;
-		}
-		break;
+
 	case TH135PARAM_TOADDR:
 		if ((::FindRTChild("mb_client", childType, childVal) && (childType & 0xFFFFF) == 0x8000) || (::FindRTChild("mb_server", childType, childVal) && (childType & 0xFFFFF) == 0x8000)) {
 			if (::ReadProcessMemory(s_ThProc, (LPCVOID)(childVal + 0x20), &childVal, sizeof childVal, &readSize) && readSize == 4) {

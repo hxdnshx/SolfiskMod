@@ -9,7 +9,7 @@
 #include "MinimalArray.hpp"
 static wchar_t LogName[]=_T("Solfisk.log");
 
-void WriteToLog(Minimal::MinimalStringT<wchar_t> str)
+void WriteToLog(Minimal::MinimalStringT<wchar_t> &str)
 {
 	HANDLE hf = CreateFileW(LogName,
 											 GENERIC_WRITE|GENERIC_READ,

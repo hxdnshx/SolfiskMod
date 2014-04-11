@@ -2,7 +2,7 @@
 
 #include "MinimalString.hpp"
 
-void WriteToLog(Minimal::MinimalStringT<wchar_t> str);
+void WriteToLog(Minimal::MinimalStringT<wchar_t> &str);
 void WriteToLog(LPCVOID ptr,int size);
 void WriteToLog(LPCWSTR ptr);
 
