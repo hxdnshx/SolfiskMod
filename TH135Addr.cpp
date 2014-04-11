@@ -547,7 +547,7 @@ static TH135STATE TH135StateNetBattle()
 	
 
 	DWORD childType, childVal;
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_SPECIAL)
 	if ((::FindRTChild("game", childType, childVal) && (childType & 0x20) != 0) //&&
 		//(::FindRTChild("network_inst", childType, childVal) && (childType & 0x8000) != 0) &&
 		//(::FindRTChild("network_is_watch", childType, childVal) && (childType & 0x8) != 0 && childVal == 0)

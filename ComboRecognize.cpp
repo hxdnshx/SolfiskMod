@@ -142,7 +142,7 @@ bool ComboRec_Append(COMBOREC_ITEM *item)
 	if(!s_ddb) return false;
 
 	rc = sqlite3_prepare(s_ddb,
-		"insert to" RECORD_TABLE "(pid,txt,damage,rate,stun) "
+		"insert into " RECORD_TABLE "(pid,txt,damage,rate,stun) "
 		"values (?,?,?,?,?);",-1,&stmt,NULL);
 	if(rc)
 	{

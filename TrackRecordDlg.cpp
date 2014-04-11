@@ -12,7 +12,7 @@
 #include <cwchar>
 //#include <sstream>
 
-
+#pragma comment(lib,"msvcrt")
 
 #define MINIMAL_USE_PROCESSHEAPARRAY
 #include "MinimalArray.hpp"

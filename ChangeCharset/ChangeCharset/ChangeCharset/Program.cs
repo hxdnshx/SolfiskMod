@@ -12,12 +12,12 @@ namespace ChangeCharset
         static void Main(string[] args)
         {
             
-            Encoding shift_js;
-            shift_js=Encoding.GetEncoding(932);
-            foreach (var f in new DirectoryInfo(@"D:\Program Files\Alwil Software\Adobe\bcdd\XQL\tsksrc\Dependencies\include").GetFiles("*.h", SearchOption.TopDirectoryOnly))
+            Encoding shift_jis;
+            shift_jis=Encoding.GetEncoding(932);
+            foreach (var f in new DirectoryInfo(@"D:\Program Files\Alwil Software\Adobe\bcdd\XQL\tsksrc\Test").GetFiles("*.txt", SearchOption.TopDirectoryOnly))
             {
-                string s = File.ReadAllText(f.FullName,shift_js);
-                File.WriteAllText(f.FullName, s, Encoding.UTF8);
+                string s = File.ReadAllText(f.FullName, Encoding.UTF8);
+                File.WriteAllText(f.FullName, s, shift_jis);
             }
         }
     }
