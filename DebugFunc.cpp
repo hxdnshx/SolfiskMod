@@ -63,6 +63,11 @@ void WriteToLog(LPCVOID ptr,int size)
 	CloseHandle(hf);
 }
 
+void WriteToLog(LPCSTR ptr)
+{
+	WriteToLog(MinimalA2T(ptr));
+}
+
 void WriteToLog(LPCWSTR ptr)
 {
 	HANDLE hf = CreateFileW(LogName,

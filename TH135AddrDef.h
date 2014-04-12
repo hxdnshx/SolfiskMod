@@ -111,7 +111,7 @@ inline double GetLifeReduceDamage(int life,int damage)
 	return life>=5000 ? damage : damage*(75+life*0.0025)/100;
 }
 
-inline double GetOriginDamageLR(int life,int damage)
+inline double GetOriginDamageLR(int life,double damage)
 {
 	return life>=5000 ? damage : damage*100/(75+life*0.0025);
 }

@@ -16,7 +16,7 @@
 #include "MinimalArray.hpp"
 
 #define RECORD_TABLE "DamageInfo"
-#define EPSILONDAMAGE 2
+#define EPSILONDAMAGE 7
 #define EPSILONRATE 1
 
 static sqlite3 *s_ddb;
@@ -112,6 +112,7 @@ bool ComboRec_QueryRecord(COMBOREC_FILTER_DESC &filterDesc, void(*callback)(COMB
 		"FROM " RECORD_TABLE " AS T %s",
 		filterStr.GetRaw()
 		);
+	WriteToLog(query);
 	int rc=sqlite3_exec(s_ddb,query,ComboRec_QueryCallback,(void*)&cbinfo,NULL);
 	sqlite3_free(query);
 	if(rc)return false;
@@ -255,24 +256,36 @@ void ComboRec_AnalysisCallBack(COMBOREC_ITEM *src,void *user)
 	list->Push(*src);
 }
 
-void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t> &ret,int hit,int prevlife,int prevrate)
+void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t> &ret,int hit,int prevlife,int prevrate,int prevstun)
 {
 	//Search
+	if(hit<0 || src.damage<0 || src.rate<0 || src.stun<0)
+	{
+		return;
+	}
+
+	
+	wchar_t log[MAX_PATH];
+	wsprintf(log,_T("dam:%d rate:%d stun:%d prevlife:%d prevrate:%d prevstun:%d hit:%d rateMin:%d rateMax:%d"),src.damage,src.rate,src.stun,prevlife,prevrate,prevrate,prevstun,hit,src.israteMin?1:0,src.isstunMax?1:0);
+	WriteToLog(log);
+	
+
 	COMBOREC_FILTER_DESC filter;
+	filter.mask=0;
 	filter.mask|=COMBOREC_FILTER__DAMAGE;
-	filter.damage_l=0;
+	filter.damage_l=(hit>1)?0:(GetOriginDamageLR(prevlife,src.damage*100/prevrate)-EPSILONDAMAGE);
 	filter.damage_h=GetOriginDamageLR(prevlife,src.damage*100/prevrate)+EPSILONDAMAGE;
 	if((!src.israteMin) || src.rate>0)
 	{
 		filter.mask|=COMBOREC_FILTER__RATE;
-		filter.rate_l=src.rate-EPSILONRATE;
-		filter.rate_h=(src.israteMin?120:(src.rate+EPSILONRATE));
+		filter.rate_l=(hit>1)?0:(src.rate-EPSILONRATE); //-EPSILONRATE
+		filter.rate_h=(src.israteMin?120:(src.rate)); //+EPSILONRATE
 	}
 	if((!src.isstunMax) || src.stun>0)
 	{
 		filter.mask|=COMBOREC_FILTER__STUN;
-		filter.stun_l=src.stun-EPSILONRATE;
-		filter.stun_h=(src.isstunMax?120:(src.stun+EPSILONRATE));
+		filter.stun_l=(hit>1)?0:src.stun; //-EPSILONRATE
+		filter.stun_h=(src.isstunMax?120:(src.stun));   //+EPSILONRATE
 	}
 	filter.pid=src.pid;
 	filter.mask|=COMBOREC_FILTER__PID;
@@ -288,9 +301,14 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 	int *stat=(int*)Minimal::g_allocator.Allocate(sizeof(int) * hit);
 	int curlife,currate;
 	int curdam;
+	int curstun;
+	int finstun=prevstun+src.stun;
+	int finrate=prevrate-src.rate;
 	int alldam;
 	int outcnt=0;
 
+	finstun=(finstun>100)?100:finstun;
+	finrate=(finrate>10)?finrate:10;
 
 	ZeroMemory(stat,sizeof(int)*hit);
 	for(;;)
@@ -320,6 +338,7 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 
 		curlife=prevlife;
 		currate=prevrate;
+		curstun=prevstun;
 		alldam=0;
 		for(i=0;i<hit;++i)
 		{
@@ -329,8 +348,10 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 			curlife-=curdam;
 			currate-=list[stat[i]].rate;
 			currate=currate>=10?currate:10;
+			curstun+=list[stat[i]].stun;
+			curstun=(curstun>100)?100:curstun;
 		}
-		if(equal(alldam,src.damage,EPSILONDAMAGE))
+		if(equal(alldam,src.damage,EPSILONDAMAGE) && equal(finstun,curstun,EPSILONRATE) && equal(finrate,currate,EPSILONRATE))
 		{
 			if(outcnt>0)
 			{

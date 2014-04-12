@@ -288,7 +288,7 @@ static void TH135_OnParamChange(WORD param1, LPARAM param2)
 				item.stun=input.stun - cinfo_p2[cinfo_p2.GetSize()-2].stun;
 				item.israteMin=(input.rate<=10);
 				item.isstunMax=(input.stun>=100);
-				ComboRec_Analysis(item,wstr,input.hit - cinfo_p2[cinfo_p2.GetSize()-2].hit,cinfo_p2[cinfo_p2.GetSize()-2].currenthp,cinfo_p2[cinfo_p2.GetSize()-2].rate);
+				ComboRec_Analysis(item,wstr,input.hit - cinfo_p2[cinfo_p2.GetSize()-2].hit,cinfo_p2[cinfo_p2.GetSize()-2].currenthp,cinfo_p2[cinfo_p2.GetSize()-2].rate,cinfo_p2[cinfo_p2.GetSize()-2].stun);
 			}
 			int tmp=input.damage;
 			if(input.hit>1 && cinfo_p2.GetSize()>=2)
@@ -332,7 +332,7 @@ static void TH135_OnParamChange(WORD param1, LPARAM param2)
 				item.stun=input.stun - cinfo_p1[cinfo_p1.GetSize()-2].stun;
 				item.israteMin=(input.rate<=10);
 				item.isstunMax=(input.stun>=100);
-				ComboRec_Analysis(item,wstr,input.hit - cinfo_p1[cinfo_p1.GetSize()-2].hit,cinfo_p1[cinfo_p1.GetSize()-2].currenthp,cinfo_p1[cinfo_p1.GetSize()-2].rate);
+				ComboRec_Analysis(item,wstr,input.hit - cinfo_p1[cinfo_p1.GetSize()-2].hit,cinfo_p1[cinfo_p1.GetSize()-2].currenthp,cinfo_p1[cinfo_p1.GetSize()-2].rate,cinfo_p1[cinfo_p1.GetSize()-2].stun);
 			}
 			int tmp=input.damage;
 			if(input.hit>1 && cinfo_p1.GetSize()>=2)
