@@ -81,13 +81,14 @@ static void ComboRec_ConstructFilter(Minimal::ProcessHeapStringA &ret, COMBOREC_
 
 int ComboRec_QueryCallback(void *user,int argc,char **argv,char **colName)
 {
-	if(argc!=4) return 1;
+	if(argc!=5) return 1;
 
 	COMBOREC_ITEM item;
 	::lstrcpyA(item.txt,argv[0]);
 	item.damage=::StrToIntA(argv[1]);
 	item.rate=::StrToIntA(argv[2]);
 	item.stun=::StrToIntA(argv[3]);
+	item.issc=::StrToIntA(argv[4]);
 
 	std::pair<void(*)(COMBOREC_ITEM*,void*),void*> *cbinfo;
 	*(void**)&cbinfo = user;
@@ -100,22 +101,26 @@ int ComboRec_QueryCallback(void *user,int argc,char **argv,char **colName)
 bool ComboRec_QueryRecord(COMBOREC_FILTER_DESC &filterDesc, void(*callback)(COMBOREC_ITEM *,void *), void *user)
 {
 	if(!s_ddb) return false;
-
+	const char* err;
 	Minimal::ProcessHeapStringT<char> filterStr;
 	ComboRec_ConstructFilter(filterStr, filterDesc);
 
 	std::pair<void(*)(COMBOREC_ITEM*,void*),void*> cbinfo
 		=std::make_pair(callback,user);
-	char *query;
+	char* query;
 	query = sqlite3_mprintf(
-		"SELECT txt,damage,rate,stun "
+		"SELECT txt,damage,rate,stun,issc "
 		"FROM " RECORD_TABLE " AS T %s",
 		filterStr.GetRaw()
 		);
 	WriteToLog(query);
 	int rc=sqlite3_exec(s_ddb,query,ComboRec_QueryCallback,(void*)&cbinfo,NULL);
 	sqlite3_free(query);
-	if(rc)return false;
+	if(rc)
+	{
+		err=sqlite3_errmsg(s_ddb);
+		WriteToLog(err);
+	}
 	return true;
 }
 
@@ -205,7 +210,8 @@ bool ComboRec_Open(bool create)
 			"txt     TEXT,\n"
 			"damage       INTEGER NOT NULL,\n"
 			"rate      INTEGER NOT NULL,\n"
-			"stun       INTEGER NOT NULL\n"
+			"stun       INTEGER NOT NULL,\n"
+			"issc       INTEGER NOT NULL\n"
 			")", NULL, NULL, &errmsg);
 		if (rc) {
 			sqlite3_close(db);
@@ -256,19 +262,19 @@ void ComboRec_AnalysisCallBack(COMBOREC_ITEM *src,void *user)
 	list->Push(*src);
 }
 
-void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t> &ret,int hit,int prevlife,int prevrate,int prevstun)
+bool ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t> &ret,int hit,int prevlife,int prevrate,int prevstun)
 {
 	//Search
-	if(hit<0 || src.damage<0 || src.rate<0 || src.stun<0)
+	if(hit<=0 || src.damage<=0 || src.rate<0 || src.stun<0)
 	{
-		return;
+		return false;
 	}
 
-	
+#if defined(_DEBUG)
 	wchar_t log[MAX_PATH];
 	wsprintf(log,_T("dam:%d rate:%d stun:%d prevlife:%d prevrate:%d prevstun:%d hit:%d rateMin:%d rateMax:%d"),src.damage,src.rate,src.stun,prevlife,prevrate,prevrate,prevstun,hit,src.israteMin?1:0,src.isstunMax?1:0);
 	WriteToLog(log);
-	
+#endif
 
 	COMBOREC_FILTER_DESC filter;
 	filter.mask=0;
@@ -298,6 +304,10 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 	int i;
 	bool flag=false;
 	int cnt=list.GetSize();
+	if(cnt<=0)
+	{
+		return false; 
+	}
 	int *stat=(int*)Minimal::g_allocator.Allocate(sizeof(int) * hit);
 	int curlife,currate;
 	int curdam;
@@ -306,6 +316,8 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 	int finrate=prevrate-src.rate;
 	int alldam;
 	int outcnt=0;
+	bool found=false;
+	bool counterflag=false;
 
 	finstun=(finstun>100)?100:finstun;
 	finrate=(finrate>10)?finrate:10;
@@ -320,8 +332,20 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 			{
 				if(i==0)
 				{
-					flag=true;
-					break;
+					if(counterflag==false)
+					{
+						for(i=hit-1;i>=0;--i)
+						{
+							stat[i]=0;
+						}
+						counterflag=true;
+						break;
+					}
+					else
+					{
+						flag=true;
+						break;
+					}
 				}
 				else
 				{
@@ -344,6 +368,10 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 		{
 			curdam=(list[stat[i]].damage)*currate/100;
 			curdam=GetLifeReduceDamage(curlife,curdam);
+			if(counterflag)
+			{
+				curdam*=1.10;
+			}
 			alldam+=curdam;
 			curlife-=curdam;
 			currate-=list[stat[i]].rate;
@@ -351,8 +379,10 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 			curstun+=list[stat[i]].stun;
 			curstun=(curstun>100)?100:curstun;
 		}
+		
 		if(equal(alldam,src.damage,EPSILONDAMAGE) && equal(finstun,curstun,EPSILONRATE) && equal(finrate,currate,EPSILONRATE))
 		{
+			found=true;
 			if(outcnt>0)
 			{
 				ret+=_T(" || ");
@@ -378,4 +408,5 @@ void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t>
 		++outcnt;
 	}
 	Minimal::g_allocator.Deallocate(stat);
+	return found;
 }

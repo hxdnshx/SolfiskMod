@@ -134,6 +134,7 @@ struct COMBOINFO_ITEM
 	time_t timestamp;
 	INT64 battle;
 	char pname[MAX_PATH];
+	wchar_t txt[MAX_PATH];
 	int pid;
 	int damage;
 	int stun;
@@ -175,7 +176,7 @@ void ScoreLine_Close();
 void ScoreLine_Enter();
 void ScoreLine_Leave(bool failed);
 
-bool ComboInfo_QueryRecord(COMBOINFO_FILTER_DESC &filterdesc,void(*callback)(COMBOINFO_ITEM*,void*),void* user);
+bool ComboInfo_QueryRecord(COMBOINFO_FILTER_DESC &filterdesc,void(*callback)(COMBOINFO_ITEM*,void*,char*),void* user);
 bool ScoreLine_QueryTrackRecord(SCORELINE_FILTER_DESC &filterdesc);
 bool ScoreLine_QueryProfileRank(SCORELINE_FILTER_DESC &filterdesc, void(*callback)(SCORELINE_ITEM *, void *), void *user);
 bool ScoreLine_QueryTrackRecordLog(SCORELINE_FILTER_DESC &filterdesc, void(*callback)(SCORELINE_ITEM *, void *), void *user);
@@ -184,7 +185,7 @@ bool ScoreLine_QueryTrackRecordTop(SCORELINE_FILTER_DESC &filterDesc, SCORELINE_
 DWORD ScoreLine_Read(int p1, int p2, int idx);
 
 bool ScoreLine_Append(SCORELINE_ITEM *item);
-bool ComboInfo_Append(COMBOINFO_ITEM *item);
+bool ComboInfo_Append(COMBOINFO_ITEM *item,const char* txt);
 bool ScoreLine_Remove(time_t timestamp);
 
 void ScoreLine_SetPath(LPCTSTR path);

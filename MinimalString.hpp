@@ -310,6 +310,7 @@ public:
 	}
 
 public:
+	int GetSize(){return s.GetSize();}
 	operator char*() { return s.GetRaw(); }
 	operator const char*() { return s.GetRaw(); }
 };

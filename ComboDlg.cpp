@@ -20,14 +20,17 @@ SLVCOLUMN s_listColumns2[] = {
 	{ LVCFMT_RIGHT,  65, _T("¥À¥á©`¥¸"),		SLVSORT_INTEGER },//damage
 	{ LVCFMT_RIGHT,  55, _T("¥¹¥¿¥ó"),		SLVSORT_INTEGER },//stun
 	{ LVCFMT_RIGHT,  55, _T("¥ì©`¥È"),	SLVSORT_INTEGER },//rate
-	{ LVCFMT_RIGHT,  55, _T("¥Ò¥Ã¥È"),	SLVSORT_INTEGER }//hit
+	{ LVCFMT_RIGHT,  55, _T("¥Ò¥Ã¥È"),	SLVSORT_INTEGER },//hit
+	{ LVCFMT_RIGHT,  45, _T("¥³¥ó¥Ü"),	SLVSORT_STRING }//combo
 };
 
-static void ComboDialog_QueryCallBack(COMBOINFO_ITEM *item,void *user)
+
+
+static void ComboDialog_QueryCallBack(COMBOINFO_ITEM *item,void *user,char* txt)
 {
 	HWND listWnd = reinterpret_cast<HWND>(user);
 
-	TCHAR text[256];
+	TCHAR text[512+256];
 	LVITEM  lvitem;
 	lvitem.mask=LVIF_TEXT;
 	lvitem.iItem = 0;
@@ -62,6 +65,11 @@ static void ComboDialog_QueryCallBack(COMBOINFO_ITEM *item,void *user)
 	::wsprintf(text, _T("%d"), item->hit);
 	ListView_SetItem(listWnd, &lvitem);
 
+	text[0]='\0';
+	lvitem.iSubItem = 6;
+	::wsprintf(text, _T("%s"), (wchar_t*)(MinimalA2T(txt)));
+	ListView_SetItem(listWnd, &lvitem);
+
 }
 
 static void SysMenu_OnClose(HWND hDlg, int x, int y)
@@ -80,6 +88,21 @@ static void SysMenu_OnReflesh(HWND hDlg, int x, int y)
 
 static LRESULT ComboDialog_OnDoubleClick(HWND hwndParent, HWND hwnd)
 {
+	int index = ListView_GetSelectionMark(hwnd);
+
+	if (index >= 0 ){//&& EnableEvent) {
+		TCHAR txt[2048];
+		LVITEM item;
+		item.mask = LVIF_TEXT;
+		item.iItem = index;
+		item.iSubItem = 6;
+		item.cchTextMax = _countof(txt);
+		item.pszText = txt;
+		ListView_GetItem(hwnd, &item);
+		//EnableEvent=false;
+		MessageBox(hwndParent,txt,_T("¥³¥ó¥Ü"),0);
+		//EnableEvent=true;
+	}
 	return FALSE;
 }
 
@@ -98,11 +121,13 @@ static LRESULT ComboDialog_OnNotify(HWND hDlg, int idCtrl, LPNMHDR pNMHdr)
 	case IDC_LIST_COMBOINFO:
 		switch(pNMHdr->code) {
 		case NM_CUSTOMDRAW:
+			return FALSE;
 			//return ColoredRecordView_OnCustomDrawWithRateColorization(hDlg, reinterpret_cast<LPNMLVCUSTOMDRAW>(pNMHdr));
 		case NM_DBLCLK:
 			return ComboDialog_OnDoubleClick(hDlg, pNMHdr->hwndFrom);
 		case LVN_COLUMNCLICK:
 			return SortListView_OnColumnClick(hDlg, reinterpret_cast<LPNMLISTVIEW>(pNMHdr));
+		
 		}
 		break;
 	}

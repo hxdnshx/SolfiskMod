@@ -145,6 +145,7 @@ static void TH135_OnKO()
 		int lsize;
 		lsize=cinfo_p1.GetSize();
 		COMBOREC_ITEM delta;
+		Minimal::ProcessHeapStringA tstr;
 		int deltahit=0;
 		delta.damage=0;
 		delta.stun=0;
@@ -160,10 +161,19 @@ static void TH135_OnKO()
 			cinfo_p1[i].pid=item.p1id;
 			lstrcpyA(cinfo_p1[i].pname,item.p1name);
 			cinfo_p1[i].battle=item.timestamp;
+			Minimal::ProcessHeapStringA ostr;
+			ToANSI(ostr,cinfo_p1[i].txt);
+			if(ostr.GetSize()>=2)
+			{
+				tstr+=ostr;
+				tstr+="\n";
+			}
+			
 			if(i==lsize-1 || cinfo_p1[i+1].damage==0)
 			{
 				cinfo_p1[i].fin=1;
-				ComboInfo_Append(&(cinfo_p1[i]));
+				ComboInfo_Append(&(cinfo_p1[i]),tstr);
+				tstr="";
 			}
 			else
 			{
@@ -179,6 +189,7 @@ static void TH135_OnKO()
 		delta.stun=0;
 		delta.rate=0;
 		delta.pid=item.p2id;
+		tstr="";
 		lsize=cinfo_p2.GetSize();
 		for(i=0;i<lsize;++i)
 		{
@@ -190,10 +201,18 @@ static void TH135_OnKO()
 			cinfo_p2[i].pid=item.p2id;
 			lstrcpyA(cinfo_p2[i].pname,item.p2name);
 			cinfo_p2[i].battle=item.timestamp;
+			Minimal::ProcessHeapStringA ostr;
+			ToANSI(ostr,cinfo_p2[i].txt);
+			if(ostr.GetSize()>=2)
+			{
+				tstr+=ostr;
+				tstr+="\n";
+			}
 			if(i==lsize-1 || cinfo_p2[i+1].damage==0)
 			{
 				cinfo_p2[i].fin=1;
-				ComboInfo_Append(&(cinfo_p2[i]));
+				ComboInfo_Append(&(cinfo_p2[i]),tstr);
+				tstr="";
 			}
 			else
 			{
@@ -274,22 +293,32 @@ static void TH135_OnParamChange(WORD param1, LPARAM param2)
 			SYSTEMTIME loctime;
 			GetLocalTime(&loctime);
 			SystemTimeToFileTime(&loctime, (LPFILETIME)&input.timestamp);
-			cinfo_p2.Push(input);
-#ifdef _SPECIAL
-			
-			
 			COMBOREC_ITEM item;
+			bool ret=false;
 			Minimal::ProcessHeapStringW wstr;
 			if(cinfo_p2.GetSize()>=2 && input.hit>0)
 			{
 				item.pid=s_paramOld[TH135PARAM_P2CHAR];
-				item.damage=input.damage - cinfo_p2[cinfo_p2.GetSize()-2].damage;
-				item.rate=cinfo_p2[cinfo_p2.GetSize()-2].rate - input.rate;
-				item.stun=input.stun - cinfo_p2[cinfo_p2.GetSize()-2].stun;
+				item.damage=input.damage - cinfo_p2[cinfo_p2.GetSize()-1].damage;
+				item.rate=cinfo_p2[cinfo_p2.GetSize()-1].rate - input.rate;
+				item.stun=input.stun - cinfo_p2[cinfo_p2.GetSize()-1].stun;
 				item.israteMin=(input.rate<=10);
 				item.isstunMax=(input.stun>=100);
-				ComboRec_Analysis(item,wstr,input.hit - cinfo_p2[cinfo_p2.GetSize()-2].hit,cinfo_p2[cinfo_p2.GetSize()-2].currenthp,cinfo_p2[cinfo_p2.GetSize()-2].rate,cinfo_p2[cinfo_p2.GetSize()-2].stun);
+				ret=ComboRec_Analysis(item,wstr,input.hit - cinfo_p2[cinfo_p2.GetSize()-1].hit,cinfo_p2[cinfo_p2.GetSize()-1].currenthp,cinfo_p2[cinfo_p2.GetSize()-1].rate,cinfo_p2[cinfo_p2.GetSize()-1].stun);
 			}
+			if(ret==true && wstr.GetSize()<100)
+			{
+				lstrcpyW(input.txt,wstr);
+			}
+			else
+			{
+				input.txt[0]=_T('\0');
+			}
+			cinfo_p2.Push(input);
+#ifdef _SPECIAL
+			
+			
+			
 			int tmp=input.damage;
 			if(input.hit>1 && cinfo_p2.GetSize()>=2)
 			{
@@ -316,24 +345,34 @@ static void TH135_OnParamChange(WORD param1, LPARAM param2)
 			SYSTEMTIME loctime;
 			GetLocalTime(&loctime);
 			SystemTimeToFileTime(&loctime, (LPFILETIME)&input.timestamp);
+			COMBOREC_ITEM item;
+			Minimal::ProcessHeapStringW wstr;
+			bool ret=false;
+			if(cinfo_p1.GetSize()>=2 && input.hit>0)
+			{
+				item.pid=s_paramOld[TH135PARAM_P1CHAR];
+				item.damage=input.damage - cinfo_p1[cinfo_p1.GetSize()-1].damage;
+				item.rate=cinfo_p1[cinfo_p1.GetSize()-1].rate - input.rate;
+				item.stun=input.stun - cinfo_p1[cinfo_p1.GetSize()-1].stun;
+				item.israteMin=(input.rate<=10);
+				item.isstunMax=(input.stun>=100);
+				ret=ComboRec_Analysis(item,wstr,input.hit - cinfo_p1[cinfo_p1.GetSize()-1].hit,cinfo_p1[cinfo_p1.GetSize()-1].currenthp,cinfo_p1[cinfo_p1.GetSize()-1].rate,cinfo_p1[cinfo_p1.GetSize()-1].stun);
+			}
+			if(ret==true && wstr.GetSize()<100)
+			{
+				lstrcpyW(input.txt,wstr);
+			}
+			else
+			{
+				input.txt[0]=_T('\0');
+			}
 			cinfo_p1.Push(input);
 #ifdef _SPECIAL
 			
 			
 			
 			
-			COMBOREC_ITEM item;
-			Minimal::ProcessHeapStringW wstr;
-			if(cinfo_p1.GetSize()>=2 && input.hit>0)
-			{
-				item.pid=s_paramOld[TH135PARAM_P1CHAR];
-				item.damage=input.damage - cinfo_p1[cinfo_p1.GetSize()-2].damage;
-				item.rate=cinfo_p1[cinfo_p1.GetSize()-2].rate - input.rate;
-				item.stun=input.stun - cinfo_p1[cinfo_p1.GetSize()-2].stun;
-				item.israteMin=(input.rate<=10);
-				item.isstunMax=(input.stun>=100);
-				ComboRec_Analysis(item,wstr,input.hit - cinfo_p1[cinfo_p1.GetSize()-2].hit,cinfo_p1[cinfo_p1.GetSize()-2].currenthp,cinfo_p1[cinfo_p1.GetSize()-2].rate,cinfo_p1[cinfo_p1.GetSize()-2].stun);
-			}
+			
 			int tmp=input.damage;
 			if(input.hit>1 && cinfo_p1.GetSize()>=2)
 			{
@@ -536,8 +575,6 @@ static BOOL MainWindow_OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 	if (::GetAsyncKeyState(VK_PAUSE) >= 0) Autorun_Enter(hwnd, _T("GameProgram"));
 
 	WriteToLog(_T("Solfisk : Init\n"));
-	COMBOINFO_ITEM item;
-	ComboInfo_Append(&item);
 
 	return TRUE;
 }

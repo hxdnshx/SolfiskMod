@@ -296,7 +296,7 @@ bool ScoreLine_Append(SCORELINE_ITEM *item)
 	return ret;
 }
 
-bool ComboInfo_Append(COMBOINFO_ITEM *item)
+bool ComboInfo_Append(COMBOINFO_ITEM *item,const char* txt)
 {
 	sqlite3_stmt *stmt;
 	int rc;
@@ -304,8 +304,8 @@ bool ComboInfo_Append(COMBOINFO_ITEM *item)
 	if (!s_db) return false;
 
 	rc = sqlite3_prepare(s_db, 
-		"insert into " COMBORECORD_TABLE " (timestamp,Battle , pname, pid, damage, stun, rate, hit, currenthp,fin) "
-		 "values (?, ?, ?, ?, ?, ?, ?, ?, ? ,?);", -1, &stmt, NULL);
+		"insert into " COMBORECORD_TABLE " (timestamp,Battle , pname, pid, damage, stun, rate, hit, currenthp,fin,txt) "
+		 "values (?, ?, ?, ?, ?, ?, ?, ?, ? ,?,?);", -1, &stmt, NULL);
 	if (rc)
 	{
 		const char* err=sqlite3_errmsg(s_db);
@@ -326,6 +326,7 @@ bool ComboInfo_Append(COMBOINFO_ITEM *item)
 	sqlite3_bind_int  (stmt, 8, item->hit);
 	sqlite3_bind_int  (stmt, 9, item->currenthp);
 	sqlite3_bind_int  (stmt, 10, item->fin);
+	sqlite3_bind_text  (stmt, 11, txt,-1,NULL);
 	bool ret = (sqlite3_step(stmt) == SQLITE_DONE);
 
 	sqlite3_finalize(stmt);
@@ -405,7 +406,7 @@ bool ScoreLine_QueryTrackRecordLog(SCORELINE_FILTER_DESC &filterDesc, void(*call
 
 int ComboInfo_QueryCallback(void *user,int argc,char** argv,char **colName)
 {
-	if(argc!=6)return 1;
+	if(argc!=7)return 1;
 
 	COMBOINFO_ITEM item;
 	lstrcpyA(item.pname,argv[0]);
@@ -415,26 +416,26 @@ int ComboInfo_QueryCallback(void *user,int argc,char** argv,char **colName)
 	item.rate=StrToIntA(argv[4]);
 	item.hit=StrToIntA(argv[5]);
 
-	std::pair<void(*)(COMBOINFO_ITEM *, void *), void*> *cbinfo;
+	std::pair<void(*)(COMBOINFO_ITEM *, void *,char*), void*> *cbinfo;
 	*(void**)&cbinfo = user;
 
-	cbinfo->first(&item, cbinfo->second);
+	cbinfo->first(&item, cbinfo->second,argv[6]);
 
 	return 0;
 }
 
-bool ComboInfo_QueryRecord(COMBOINFO_FILTER_DESC &filterdesc,void(*callback)(COMBOINFO_ITEM*,void*),void* user)
+bool ComboInfo_QueryRecord(COMBOINFO_FILTER_DESC &filterdesc,void(*callback)(COMBOINFO_ITEM*,void*,char*),void* user)
 {
 	if (!s_db) return false;
 
 	Minimal::ProcessHeapStringT<char> filterStr;
 	ComboInfo_ConstructFilter(filterStr, filterdesc);
 
-	std::pair<void(*)(COMBOINFO_ITEM *, void *), void*> cbinfo
+	std::pair<void(*)(COMBOINFO_ITEM *, void *,char*), void*> cbinfo
 		= std::make_pair(callback, user);
 	char *query;
 	query = sqlite3_mprintf(
-			"SELECT pname,pid,damage,stun,rate,hit "
+			"SELECT pname,pid,damage,stun,rate,hit,txt "
 			"FROM " COMBORECORD_TABLE " %s",
 			filterStr.GetRaw());
 
@@ -528,6 +529,7 @@ bool ScoreLine_Open(bool create)
 				"hit      INTEGER NOT NULL,\n"
 				"currenthp      INTEGER NOT NULL,\n"
 				"fin      INTEGER NOT NULL,\n"
+				"txt    TEXT\n"
 				"PRIMARY KEY (timestamp)\n"
 			")", NULL, NULL, &errmsg);
 		if (rc) {
@@ -540,9 +542,26 @@ bool ScoreLine_Open(bool create)
 			"on " COMBORECORD_TABLE " (timestamp)", NULL, NULL, &errmsg);
 		if (rc) {
 			sqlite3_close(db);
-			::DeleteFile(s_srPath);
+			//::DeleteFile(s_srPath);
 			return false;
 		}
+		rc = sqlite3_exec(db, 
+			"select txt from " COMBORECORD_TABLE " where timestamp=-1"
+			, NULL, NULL, &errmsg);
+		if(rc)
+		{
+			rc = sqlite3_exec(db, 
+				"alter table " COMBORECORD_TABLE " add txt TEXT"
+				, NULL, NULL, &errmsg);
+			if(rc)
+			{
+				sqlite3_close(db);
+				//::DeleteFile(s_srPath);
+				return false;
+			}
+		}
+		//alter table camborecord135 add txt TEXT
+		//select txt from camborecord135 where timestamp=-1
 		}
 
 		rc = sqlite3_exec(db,

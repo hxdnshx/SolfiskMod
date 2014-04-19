@@ -54,6 +54,7 @@ struct COMBOREC_ITEM
 	int stun;
 	bool isstunMax;
 	bool israteMin;
+	int issc;
 };
 
 void ComboRec_SetPath(LPCTSTR path);
@@ -65,4 +66,4 @@ bool ComboRec_Open(bool create);
 void ComboRec_Enter();
 void ComboRec_Leave(bool failed);
 void ComboRec_Close();
-void ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t> &ret,int hit,int prevlife,int prevrate,int prevstun);
+bool ComboRec_Analysis(const COMBOREC_ITEM &src,Minimal::MinimalStringT<wchar_t> &ret,int hit,int prevlife,int prevrate,int prevstun);
