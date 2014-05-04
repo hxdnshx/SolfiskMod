@@ -59,6 +59,11 @@ static int   s_viewMode;
 static INFOTRANSTYPE s_infoTransfer;
 static Minimal::MinimalArrayT<COMBOINFO_ITEM> cinfo_p1(&Minimal::g_allocator);
 static Minimal::MinimalArrayT<COMBOINFO_ITEM> cinfo_p2(&Minimal::g_allocator);
+static Minimal::MinimalArrayT< Minimal::MinimalStringT<wchar_t>* > rList(&Minimal::g_allocator);
+//忍不住就定死成了Unicode
+static Minimal::MinimalStringT<wchar_t>  rFile(&Minimal::g_allocator);
+static int rNum = 0;
+
 
 void MainWindow_ChangeNotifyIcon(NOTIFYICONTYPE type)
 {
@@ -389,6 +394,24 @@ static void TH135_OnParamChange(WORD param1, LPARAM param2)
 	}
 }
 
+static void TH135_OnReplayChange(WORD param1, LPARAM param2)
+{
+	if (rList.GetSize() <= 0)
+	{
+		return;
+	}
+	if (!CopyFile(rList[rNum]->GetRaw(), rFile.GetRaw(), false))
+	{
+		wchar_t debugmsg[MAX_PATH];
+		wsprintf(debugmsg, _T("Replay Sys: Failed Copy File %s To %s"),rList[rNum]->GetRaw(),rFile.GetRaw());
+		WriteToLog(debugmsg);
+	}
+	if (++rNum >= rList.GetSize())
+	{
+		rNum = 0;
+	}
+}
+
 static void MainWindow_OnTH135Callback(HWND hwnd, WORD Msg, WORD param1, LPARAM param2)
 {
 	if (s_disableTH135Callback) return;
@@ -398,6 +421,9 @@ static void MainWindow_OnTH135Callback(HWND hwnd, WORD Msg, WORD param1, LPARAM 
 		break;
 	case TH135MSG_PARAMCHANGE: /* パラメータ変化 */
 		TH135_OnParamChange(param1, param2);
+		break;
+	case TH135MSG_REPLYCHANGE:
+		TH135_OnReplayChange(param1, param2);
 		break;
 	}
 }
@@ -570,6 +596,41 @@ static BOOL MainWindow_OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 	}
 	Shortcut_Construct(scArray.GetRaw(), scArray.GetSize());
 
+	g_settings.ReadString(_T("General"), _T("ReplayFile"), _T(""), profPathBuff, _countof(profPathBuff));
+	rFile = profPathBuff;
+	g_settings.ReadString(_T("General"), _T("ReplayPath"), _T(""), profPathBuff, _countof(profPathBuff));
+	Minimal::MinimalStringT<wchar_t> rpath(&(Minimal::g_allocator));
+	Minimal::MinimalStringT<wchar_t> fpath(&(Minimal::g_allocator));
+	rpath = profPathBuff;
+	rpath += _T("\\*.rep");
+	WIN32_FIND_DATA fnd;
+	HANDLE hfind = FindFirstFile(rpath, &fnd);
+	if (FAILED(hfind))
+	{
+		SetReplayState(false);
+		WriteToLog(_T("Invaild Replay Path\n"));
+	}
+	else
+	{
+		do 
+		{
+			if (fnd.cFileName[0] == _T('.'))
+				continue;
+			if (!(fnd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+			{
+				fpath = _T("");
+				fpath.Grow(512);
+				wsprintf(fpath.GetRaw(), _T("%s\\%s"),profPathBuff,fnd.cFileName);
+				rList.Push(new Minimal::MinimalStringT<wchar_t>(fpath,&Minimal::g_allocator));
+			}
+		} while (FindNextFile(hfind,&fnd));
+		WriteToLog(_T("Replay Load Successfully."));
+		SetReplayState(true);
+		FindClose(hfind);
+	}
+
+
+
 	Autorun_CheckMenuItem(s_hPopupMenu, _T("ReportTool"), ID_AUTORUN_REPORTTOOL_FLIPENABLED);
 	Autorun_CheckMenuItem(s_hPopupMenu, _T("GameProgram"), ID_AUTORUN_GAMEPROGRAM_FLIPENABLED);
 	if (::GetAsyncKeyState(VK_PAUSE) >= 0) Autorun_Enter(hwnd, _T("GameProgram"));
@@ -602,6 +663,11 @@ static void MainWindow_OnDestroy(HWND hwnd)
 	}
 	g_settings.WriteString(_T("Shortcut"), Formatter(_T("Key%d"), i), NULL);
 	g_settings.WriteString(_T("Shortcut"), Formatter(_T("Path%d"), i), NULL);
+	for (i = 0; i < rList.GetSize(); ++i)
+	{
+		delete rList[i];
+	}
+	rList.Clear();
 
 	if (s_nid.cbSize) {
 		Shell_NotifyIcon(NIM_DELETE, &s_nid);

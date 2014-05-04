@@ -27,12 +27,14 @@ extern int s_paramOld[];
 enum TH135CBMSG {
 	TH135MSG_STATECHANGE,
 	TH135MSG_PARAMCHANGE,
+	TH135MSG_REPLYCHANGE
 };
 
 enum TH135STATE {
 	TH135STATE_NOTFOUND,
 	TH135STATE_WAITFORNETBATTLE,
-	TH135STATE_NETBATTLE
+	TH135STATE_NETBATTLE,
+	TH135STATE_REPLAYING
 };
 
 enum TH135SCHAR {
@@ -122,5 +124,6 @@ inline double GetOriginDamageLR(int life,double damage)
 #endif
 
 extern TH135GETPARAM s_paramlist[];
+void SetReplayState(bool i);
 
 #endif /* TH135ADDRDEF_H_INCLUDED */

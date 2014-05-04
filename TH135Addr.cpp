@@ -37,9 +37,12 @@ TH135GETPARAM s_paramlist[]={
 	{"act/BattleStatus/global/status/p1/stun",0x2,_T("Stun_P1")},
 	{"act/BattleStatus/global/status/p2/stun",0x2,_T("Stun_P2")},
 	{"act/BattleStatus/global/status/p1/hp_b",0x2,_T("HP_P1")},
-	{"act/BattleStatus/global/status/p2/hp_b",0x2,_T("HP_P2")}
+	{"act/BattleStatus/global/status/p2/hp_b",0x2,_T("HP_P2")},
+	{"act/ReplaySelect/global/selector_replay/cursor", 0x2, _T("cnt")},
+	{"act/ReplaySelect/global/current_explain", 0x2, _T("explain")},
+	{"replay/is_playing", 0x8, _T("repplay")}
 };
-	const int s_paramcnt=10;
+	const int s_paramcnt=13;
 
 static TH135CHARNAME s_charNames[] = {
 	{ _T("博麗霊夢"), _T("霊夢") },
@@ -72,6 +75,8 @@ static int  s_callbackMsg;
 static HANDLE s_userThread;
 static HANDLE s_thread;
 static DWORD s_threadId;
+
+static bool repSys=false;
 
 int s_paramOld[TH135PARAM_MAX+s_paramcnt];
 static Minimal::ProcessHeapStringA s_paramStr;
@@ -474,7 +479,7 @@ static void TH135Callback(short Msg, short param1, int param2)
 	}
 }
 
-static TH135STATE TH135StateFindWindow()
+static TH135STATE TH135StateFindWindow()	
 {
 	s_ThWnd = ::FindWindow(s_WindowClass, s_WindowCaption);
 	if (s_ThWnd != NULL) {
@@ -497,6 +502,53 @@ static TH135STATE TH135StateFindWindow()
 	}
 }
 
+void VirtualPress(int keyid)
+{
+	SleepEx(200, true);
+	INPUT w;
+	memset(&w, 0, sizeof(INPUT));
+	int i = MapVirtualKey(keyid, 0);
+	w.type = INPUT_KEYBOARD;
+	w.ki.wVk = keyid;
+	w.ki.wScan = i;
+	w.ki.dwFlags = KEYEVENTF_SCANCODE;
+	//SendInput(1, &w, sizeof(w));
+	
+	keybd_event(keyid, i, 0, 1);
+	SleepEx(1000, true);
+	keybd_event(keyid, i, KEYEVENTF_KEYUP, 1);
+	w.ki.dwFlags = KEYEVENTF_KEYUP | KEYEVENTF_SCANCODE;
+	//SendInput(1, &w, sizeof(w));
+	SleepEx(200, true);
+	
+}
+
+void SetReplayState(bool i)
+{
+	repSys = i;
+}
+
+static TH135STATE TH135StateReplaying()
+{
+	int k = TH135AddrGetParam(PL2P(12));
+	if (!repSys)
+	{
+		return TH135STATE_WAITFORNETBATTLE;
+	}
+	if (k == 0)
+	{
+		SleepEx(8000, true);
+		TH135Callback(TH135MSG_REPLYCHANGE, 0, 0);
+		SleepEx(1000, true);
+		VirtualPress(90);
+		SleepEx(1000, true);
+		VirtualPress(90);
+		SleepEx(20000,true);
+		return TH135STATE_WAITFORNETBATTLE;
+	}
+	return TH135STATE_REPLAYING;
+}
+
 static TH135STATE TH135StateWaitForNetBattle()
 {
 	DWORD ret = ::WaitForSingleObject(s_ThProc, 0);
@@ -510,8 +562,15 @@ static TH135STATE TH135StateWaitForNetBattle()
 	
 
 	DWORD childType, childVal;
-
-	//::EnumRTChild("actor/player1/tempAtkData/",3);
+	//::EnumRTChild("act/ReplaySelect/global/",3);
+	//int i = TH135AddrGetParam(PL2P(10));
+	//int j = TH135AddrGetParam(PL2P(11));
+	int k = TH135AddrGetParam(PL2P(12));
+	if (k == 1)
+	{
+		return TH135STATE_REPLAYING;
+	}
+	//VirtualPress(VK_DOWN);
 	//COMBOINFO_ITEM it;
 	//ComboInfo_Append(&it);
 
@@ -592,9 +651,9 @@ static DWORD WINAPI TH135AddrWorkThread(LPVOID)
 		case TH135STATE_NOTFOUND:            s_TH135State = TH135StateFindWindow(); break;
 		case TH135STATE_WAITFORNETBATTLE:    s_TH135State = TH135StateWaitForNetBattle(); break;
 		case TH135STATE_NETBATTLE:           s_TH135State = TH135StateNetBattle(); break;
+		case TH135STATE_REPLAYING:           s_TH135State = TH135StateReplaying(); break;
 		};
 		::SleepEx(POLL_INTERVAL, TRUE);
-
 		//对于ComboRec_Analysis的测试用例
 		/*
 		static COMBOREC_ITEM item;

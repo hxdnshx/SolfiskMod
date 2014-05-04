@@ -1,6 +1,6 @@
 ﻿#include "pch.hpp"
 #include "Solfisk.hpp"
-#include "DlgCommon.hpp"
+
 #include "TrackRecorddlg.hpp"
 #include "TrackRecordFilterDlg.hpp"
 #include "ColoredRecordView.hpp"
@@ -10,6 +10,8 @@
 #include "ComboDlg.hpp"
 #include <cstdio>
 #include <cwchar>
+#include <windows.h>
+#include "DlgCommon.hpp"
 //#include <sstream>
 
 #pragma comment(lib,"msvcrt")
